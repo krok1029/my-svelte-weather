@@ -2474,6 +2474,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucide-svelte@npm:^0.363.0":
+  version: 0.363.0
+  resolution: "lucide-svelte@npm:0.363.0"
+  peerDependencies:
+    svelte: ^3 || ^4 || ^5.0.0-next.42
+  checksum: 10c0/1d95f2e90543ca49f2928d509cc7fc4471fe5886b8d1d62744b4ff8ed6b86de8831d7f308a4a64764ab938ac32417119faea8bced1a507c7b28de775dd6f0bd9
+  languageName: node
+  linkType: hard
+
 "magic-string@npm:^0.30.4, magic-string@npm:^0.30.5":
   version: 0.30.8
   resolution: "magic-string@npm:0.30.8"
@@ -2688,6 +2697,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mode-watcher@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "mode-watcher@npm:0.3.0"
+  peerDependencies:
+    svelte: ^4.0.0
+  checksum: 10c0/55a5faa2a5929cb6c964faf4c469446e6de6568244fdf63f1d062f8a9d1abb1f0d0dd32f534fcfda7145192cd9c64cbc6c1ec3a896f8bf85975a442b7b252f51
+  languageName: node
+  linkType: hard
+
 "mri@npm:^1.1.0":
   version: 1.2.0
   resolution: "mri@npm:1.2.0"
@@ -2726,6 +2744,8 @@ __metadata:
     eslint: "npm:^8.56.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-svelte: "npm:^2.35.1"
+    lucide-svelte: "npm:^0.363.0"
+    mode-watcher: "npm:^0.3.0"
     postcss: "npm:^8.4.32"
     postcss-load-config: "npm:^5.0.2"
     prettier: "npm:^3.1.1"
