@@ -1,29 +1,109 @@
 <script lang="ts">
+	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
-	import Sun from 'lucide-svelte/icons/sun';
-	import Moon from 'lucide-svelte/icons/moon';
-	import { setMode, resetMode } from 'mode-watcher';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import L, { FeatureGroup } from 'leaflet';
+	import 'leaflet/dist/leaflet.css';
+	import _ from 'lodash';
+	import type { Action } from 'svelte/action';
+	import type { GeoJsonObject, Feature } from 'geojson';
+	import geo from '$lib/中華民國縣市.json';
+	import taiwanDistricts from '$lib/taiwan_districts.json';
+
+	let map: L.Map;
+	let geoLayer: L.GeoJSON;
+	const cityNames = taiwanDistricts.map((city) => city.name);
+
+	const initialView = { lat: 23.5283, lng: 120.9795 };
+	const createMap = (container: HTMLDivElement) => {
+		let m = L.map(container, { preferCanvas: true }).setView(initialView, 8);
+
+		L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 19,
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+		}).addTo(m);
+
+		return m;
+	};
+	const onEachFeature = (feature: Feature, layer: FeatureGroup) => {
+		// console.log('feature', feature);
+		if (feature.properties) {
+			const cityName = feature.properties.NAME_2014;
+
+			layer.bindTooltip(cityName);
+			// layer.on('click', () => {
+			// 	console.log(cityName);
+			// });
+
+			layer.on('mouseover', function () {
+				layer.setStyle({
+					fillColor: '#0000ff'
+				});
+			});
+			layer.on('mouseout', function () {
+				layer.setStyle({
+					fillColor: 'transparent',
+					className: 'myListener '
+				});
+			});
+		}
+	};
+	const mapAction: Action<HTMLDivElement, { someProperty: boolean } | undefined> = (node) => {
+		map = createMap(node);
+		geoLayer = L.geoJSON(geo as GeoJsonObject, {
+			onEachFeature,
+			style: { fillColor: 'transparent' }
+		});
+		geoLayer.addTo(map);
+		return {
+			destroy: () => {
+				map.remove();
+			}
+		};
+	};
+
+	const showCity = (city: string) => {
+		geoLayer.eachLayer((layer) => {
+			const a = layer as FeatureGroup;
+			const layerName = _.get(a, 'feature.properties.NAME_2014');
+			if (layerName === city) {
+				a.setStyle({ fillColor: '#0f00ff' });
+			} else {
+				a.setStyle({ fillColor: 'transparent' });
+			}
+		});
+	};
 </script>
 
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-
-<DropdownMenu.Root>
-	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="outline" size="icon">
-			<Sun
-				class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-			/>
-			<Moon
-				class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-			/>
-			<span class="sr-only">Toggle theme</span>
-		</Button>
-	</DropdownMenu.Trigger>
-	<DropdownMenu.Content align="end">
-		<DropdownMenu.Item on:click={() => setMode('light')}>Light</DropdownMenu.Item>
-		<DropdownMenu.Item on:click={() => setMode('dark')}>Dark</DropdownMenu.Item>
-		<DropdownMenu.Item on:click={() => resetMode()}>System</DropdownMenu.Item>
-	</DropdownMenu.Content>
-</DropdownMenu.Root>
+<div class="bg-background m-4 overflow-hidden rounded-[0.5rem] border shadow-xl">
+	<div class="hidden items-start justify-center gap-6 rounded-lg p-8 md:grid lg:grid-cols-2">
+		<Card.Root class="m-3 p-3">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>天氣預報</Card.Title>
+					<Card.Description>今日天氣</Card.Description>
+				</Card.Header>
+				<Card.Content class="flex w-full flex-wrap gap-1">
+					{#each cityNames as name}
+						<Button on:click={() => showCity(name)} variant="secondary">
+							<span class="sr-only">{name}</span>
+							<p>{name}</p>
+						</Button>
+					{/each}
+				</Card.Content>
+			</Card.Root>
+			<Card.Content class="mt-3 flex w-full flex-wrap gap-1">
+				{#each cityNames as name}
+					<Button on:click={() => showCity(name)} variant="secondary">
+						<span class="sr-only">{name}</span>
+						<p>{name}</p>
+					</Button>
+				{/each}
+			</Card.Content>
+		</Card.Root>
+		<Card.Root class="p-3">
+			<Card.Content class="h-[750px] w-[450px]">
+				<div class="map h-full w-full" use:mapAction />
+			</Card.Content>
+		</Card.Root>
+	</div>
+</div>
