@@ -8,7 +8,7 @@ export type WeatherRequestParams = {
 	sort?: string;
 	startTime?: string[];
 	timeFrom?: string;
-  timeTo?: string;
+	timeTo?: string;
 };
 
 export type WeatherResponse = {
@@ -30,6 +30,15 @@ export type WeatherRecords = {
 	location: WeatherLocation[];
 };
 
+export type WeatherTimeElement = {
+	startTime: string;
+	endTime: string;
+	Wx?: ParameterWx;
+	Pop?: ParameterPop;
+	MinT?: ParameterMinT;
+	CI?: ParameterCI;
+	MaxT?: ParameterMaxT;
+};
 export type WeatherLocation = {
 	locationName: string;
 	weatherElement: WeatherElement[];
@@ -63,7 +72,7 @@ export type ParameterPop = {
 };
 
 export type WeatherElementMinT = {
-	elementName: 'Pop';
+	elementName: 'MinT';
 	time: Array<{ startTime: string; endTime: string; parameter: ParameterMinT }>;
 };
 
@@ -73,7 +82,7 @@ export type ParameterMinT = {
 };
 
 export type WeatherElementCI = {
-	elementName: 'Pop';
+	elementName: 'CI';
 	time: Array<{ startTime: string; endTime: string; parameter: ParameterCI }>;
 };
 
@@ -82,7 +91,7 @@ export type ParameterCI = {
 };
 
 export type WeatherElementMaxT = {
-	elementName: 'Pop';
+	elementName: 'MaxT';
 	time: Array<{ startTime: string; endTime: string; parameter: ParameterMaxT }>;
 };
 
