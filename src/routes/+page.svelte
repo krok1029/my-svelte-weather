@@ -83,12 +83,7 @@
 					<Card.Description>今日天氣</Card.Description>
 				</Card.Header>
 				<Card.Content class="flex w-full flex-wrap gap-1">
-					{#each cityNames as name}
-						<Button on:click={() => showCity(name)} variant="secondary">
-							<span class="sr-only">{name}</span>
-							<p>{name}</p>
-						</Button>
-					{/each}
+					test
 				</Card.Content>
 			</Card.Root>
 			<Card.Content class="mt-3 flex w-full flex-wrap gap-1">
@@ -101,7 +96,7 @@
 			</Card.Content>
 		</Card.Root>
 		<Card.Root class="p-3">
-			<Card.Content class="h-[750px] w-[450px]">
+			<Card.Content class="h-[750px] w-full">
 				<div class="map h-full w-full" use:mapAction />
 			</Card.Content>
 		</Card.Root>

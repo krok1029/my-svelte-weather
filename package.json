@@ -43,7 +43,7 @@
 		"vitest": "^1.2.0"
 	},
 	"type": "module",
-	"packageManager": "yarn@4.1.1",
+	"packageManager": "yarn@4.2.2",
 	"dependencies": {
 		"bits-ui": "^0.21.1",
 		"clsx": "^2.1.0",
