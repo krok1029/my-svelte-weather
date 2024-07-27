@@ -112,7 +112,7 @@
 </script>
 
 <div class="bg-background m-4 overflow-hidden rounded-[0.5rem] border shadow-xl">
-	<div class="hidden items-start justify-center gap-6 rounded-lg p-8 md:grid lg:grid-cols-2">
+	<div class="items-start justify-center gap-6 rounded-lg p-8 md:grid lg:grid-cols-2">
 		<Card.Root class="m-3 p-3">
 			<Card.Root>
 				<Card.Header>
@@ -122,7 +122,7 @@
 				<Card.Content class="flex w-full flex-wrap gap-1"
 					>{#if !!showData}
 						<Card.Description>{showData.locationName}</Card.Description>
-						<div class="grid grid-cols-3 gap-4">
+						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 							{#each showData.timeElementsMap as range}
 								<Card.Root>
 									<Card.Header
