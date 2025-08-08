@@ -9,7 +9,11 @@ const config = {
 
 	compilerOptions: {
 		customElement: false,
-		css: 'injected'
+		warningFilter: (warning) => {
+			// Suppress custom element props warnings since we're not building custom elements
+			if (warning.code === 'custom_element_props_identifier') return false;
+			return true;
+		}
 	},
 
 	kit: {
@@ -19,12 +23,6 @@ const config = {
 		adapter: adapter(),
 		alias: {
 			'@/*': './src/lib/*'
-		}
-	},
-
-	vitePlugin: {
-		compilerOptions: {
-			customElement: false
 		}
 	}
 };

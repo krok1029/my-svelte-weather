@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { Dialog as SheetPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils.js';
+	import type { HTMLAttributes } from 'svelte/elements';
 
-	interface Props {
-		class?: string;
+	interface Props extends HTMLAttributes<HTMLElement> {
 		children?: import('svelte').Snippet;
-		[key: string]: any;
 	}
 
-	let { class: className = undefined, children, ...rest }: Props = $props();
+	let { children, ...rest }: Props = $props();
 </script>
 
 <SheetPrimitive.Portal {...rest}>
