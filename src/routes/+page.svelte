@@ -3,7 +3,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import WeatherRangeCard from '$lib/components/WeatherRangeCard.svelte';
 	import { createMap, addGeoLayer } from '$lib/map';
-	import L, { FeatureGroup } from 'leaflet';
+	import L from 'leaflet';
+	import type { FeatureGroup } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import _ from 'lodash';
 	import type { Action } from 'svelte/action';

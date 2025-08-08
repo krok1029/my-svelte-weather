@@ -1,4 +1,5 @@
-import L, { FeatureGroup } from 'leaflet';
+import L from 'leaflet';
+import type { FeatureGroup } from 'leaflet';
 import type { Feature, GeoJsonObject } from 'geojson';
 
 export const initialView = { lat: 23.5283, lng: 120.9795 };
