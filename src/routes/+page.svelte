@@ -74,7 +74,7 @@
 				locationName: string;
 				timeElementsMap: WeatherTimeElement[];
 		  }
-		| undefined;
+		| undefined = $state();
 
 	const handleBtnClick = (city: string) => {
 		showCity(city);
@@ -155,7 +155,7 @@
 		</Card.Root>
 		<Card.Root class="p-3">
 			<Card.Content class="h-[750px] w-full">
-				<div class="map h-full w-full" use:mapAction />
+				<div class="map h-full w-full" use:mapAction></div>
 			</Card.Content>
 		</Card.Root>
 	</div>
