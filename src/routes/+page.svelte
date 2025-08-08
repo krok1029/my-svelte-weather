@@ -67,7 +67,7 @@
 		};
 	};
 
-	let weatherData: WeatherResponse;
+	let weatherData = $state<WeatherResponse>();
 	let error = null;
 	let showData:
 		| {
@@ -94,7 +94,9 @@
 	};
 
 	const getCityWeatherData = (city: string) => {
-		const location = weatherData.records.location.find(({ locationName }) => locationName === city);
+		const location = weatherData?.records.location.find(
+			({ locationName }) => locationName === city
+		);
 		if (location) {
 			showData = weatherFactory(location);
 			console.log(showData);
@@ -161,7 +163,7 @@
 			</Card.Root>
 			<Card.Content class="mt-3 flex w-full flex-wrap gap-1">
 				{#each cityNames as name}
-					<Button on:click={() => handleBtnClick(name)} variant="secondary">
+					<Button onclick={() => handleBtnClick(name)} variant="secondary">
 						<span class="sr-only">{name}</span>
 						<p>{name}</p>
 					</Button>
