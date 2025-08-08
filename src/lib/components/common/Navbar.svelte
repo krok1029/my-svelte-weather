@@ -17,9 +17,9 @@
 	>
 		<a href="##" class="flex items-center gap-2 text-lg font-semibold md:text-base">
 			<CloudSun class="h-6 w-6" />
-			<span class="sr-only">Svelte Wather App</span>
+                        <span class="sr-only">Svelte Weather App</span>
 		</a>
-		<a href="##" class="text-foreground transition-colors hover:text-foreground"> Wather </a>
+		<a href="##" class="text-foreground transition-colors hover:text-foreground"> Weather </a>
 	</nav>
 	<Sheet.Root>
 		<Sheet.Trigger asChild let:builder>
@@ -32,9 +32,9 @@
 			<nav class="grid gap-6 text-lg font-medium">
 				<a href="##" class="flex items-center gap-2 text-lg font-semibold">
 					<CloudSun class="h-6 w-6" />
-					<span class="sr-only">Svelte Wather App</span>
+                                        <span class="sr-only">Svelte Weather App</span>
 				</a>
-				<a href="##" class="hover:text-foreground"> Wather </a>
+                                <a href="##" class="hover:text-foreground"> Weather </a>
 			</nav>
 		</Sheet.Content>
 	</Sheet.Root>
