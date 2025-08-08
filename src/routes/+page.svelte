@@ -1,11 +1,13 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
+	import WeatherRangeCard from '$lib/components/WeatherRangeCard.svelte';
+	import { createMap, addGeoLayer } from '$lib/map';
 	import L, { FeatureGroup } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import _ from 'lodash';
 	import type { Action } from 'svelte/action';
-	import type { GeoJsonObject, Feature } from 'geojson';
+	import type { GeoJsonObject } from 'geojson';
 	import { onMount } from 'svelte';
 	import { fetchWeatherData } from '$lib/api';
 	import type { WeatherResponse, WeatherTimeElement } from '@/weatherType';
@@ -17,63 +19,22 @@
 	let taiwanDistricts: Array<{ name: string }> = [];
 	let cityNames = $state<string[]>([]);
 
-	const initialView = { lat: 23.5283, lng: 120.9795 };
-
-	const createMap = (container: HTMLDivElement) => {
-		let m = L.map(container, { preferCanvas: true }).setView(initialView, 8);
-
-		L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			maxZoom: 19,
-			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-		}).addTo(m);
-
-		return m;
-	};
-
-	const onEachFeature = (feature: Feature, layer: FeatureGroup) => {
-		if (feature.properties) {
-			const cityName = feature.properties.NAME_2014;
-
-			layer.bindTooltip(cityName);
-
-			layer.on('mouseover', function () {
-				layer.setStyle({
-					fillColor: '#0000ff'
-				});
-			});
-			layer.on('mouseout', function () {
-				layer.setStyle({
-					fillColor: 'transparent',
-					className: 'myListener '
-				});
-			});
-			layer.on('click', function () {
-				console.log('cityName', cityName);
-				getCityWeatherData(cityName);
-			});
-		}
-	};
-	const mapAction: Action<HTMLDivElement, { someProperty: boolean } | undefined> = (node) => {
+	const mapAction: Action<HTMLDivElement> = (node) => {
 		map = createMap(node);
 
-		// 當 geo 數據加載完成後添加圖層
-		const addGeoLayer = () => {
+		const tryAddLayer = () => {
 			if (geo && !geoLayer) {
-				geoLayer = L.geoJSON(geo as GeoJsonObject, {
-					onEachFeature,
-					style: { fillColor: 'transparent' }
-				});
-				geoLayer.addTo(map);
+				geoLayer = addGeoLayer(map, geo as GeoJsonObject, getCityWeatherData);
 			}
 		};
 
 		// 立即檢查是否已有數據
-		addGeoLayer();
+		tryAddLayer();
 
 		// 監聽數據變化
 		const checkInterval = setInterval(() => {
-			if (geo && !geoLayer) {
-				addGeoLayer();
+			tryAddLayer();
+			if (geoLayer) {
 				clearInterval(checkInterval);
 			}
 		}, 100);
@@ -161,34 +122,7 @@
 						<Card.Description>縣市：{showData.locationName}</Card.Description>
 						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 							{#each showData.timeElementsMap as range}
-								<Card.Root>
-									<Card.Header>
-										<Card.Title>
-											{`${range.startTime}~${range.endTime}`}
-										</Card.Title>
-									</Card.Header>
-									<Card.Content>
-										<ul>
-											<li>
-												天氣現象：{range.Wx?.parameterName}
-											</li>
-											<li>
-												降雨機率：{range.Pop
-													? `${range.Pop.parameterName}${range.Pop.parameterUnit}`
-													: ''}
-											</li>
-											<li>
-												最高溫：{range.MaxT ? `${range.MaxT.parameterName}°C` : ''}
-											</li>
-											<li>
-												最低溫：{range.MinT ? `${range.MinT.parameterName}°C` : ''}
-											</li>
-											<li>
-												舒適度：{range.CI?.parameterName}
-											</li>
-										</ul>
-									</Card.Content>
-								</Card.Root>
+								<WeatherRangeCard {range} />
 							{/each}
 						</div>
 					{/if}</Card.Content
