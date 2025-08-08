@@ -10,8 +10,8 @@
 	import type { GeoJsonObject } from 'geojson';
 	import { onMount } from 'svelte';
 	import { fetchWeatherData } from '$lib/api';
-	import type { WeatherResponse, WeatherTimeElement } from '@/weatherType';
-	import weatherFactory from '@/Factory/WeatherLocationFactory';
+	import type { WeatherResponse, WeatherTimeElement } from '@/types/weatherType';
+	import weatherFactory from '@/factories/weather-location-factory';
 
 	let map: L.Map;
 	let geoLayer: L.GeoJSON;

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import type { WeatherTimeElement } from '@/weatherType';
+	import type { WeatherTimeElement } from '@/types/weatherType';
 	export let range: WeatherTimeElement;
 </script>
 

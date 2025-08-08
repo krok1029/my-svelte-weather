@@ -1,4 +1,4 @@
-import type { WeatherResponse } from '@/weatherType';
+import type { WeatherResponse } from '@/types/weatherType';
 import axios from 'axios';
 
 import { env } from '$env/dynamic/public';
