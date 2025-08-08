@@ -111,7 +111,7 @@
 	});
 </script>
 
-<div class="bg-background m-4 overflow-hidden rounded-[0.5rem] border shadow-xl">
+<div class="m-4 overflow-hidden rounded-[0.5rem] border bg-background shadow-xl">
 	<div class="items-start justify-center gap-6 rounded-lg p-8 md:grid lg:grid-cols-2">
 		<Card.Root class="m-3 p-3">
 			<Card.Root>

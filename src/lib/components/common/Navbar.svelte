@@ -11,7 +11,7 @@
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 </script>
 
-<header class="bg-background sticky top-0 flex h-16 items-center gap-4 border-b px-4 md:px-6">
+<header class="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
 	<nav
 		class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6"
 	>
@@ -19,7 +19,7 @@
 			<CloudSun class="h-6 w-6" />
 			<span class="sr-only">Svelte Wather App</span>
 		</a>
-		<a href="##" class="text-foreground hover:text-foreground transition-colors"> Wather </a>
+		<a href="##" class="text-foreground transition-colors hover:text-foreground"> Wather </a>
 	</nav>
 	<Sheet.Root>
 		<Sheet.Trigger asChild let:builder>
