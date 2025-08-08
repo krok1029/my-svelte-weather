@@ -6,8 +6,6 @@
 	import _ from 'lodash';
 	import type { Action } from 'svelte/action';
 	import type { GeoJsonObject, Feature } from 'geojson';
-	import geo from '$lib/中華民國縣市.json';
-	import taiwanDistricts from '$lib/taiwan_districts.json';
 	import { onMount } from 'svelte';
 	import { fetchWeatherData } from '$lib/api';
 	import type { WeatherResponse, WeatherTimeElement } from '@/weatherType';
@@ -15,7 +13,9 @@
 
 	let map: L.Map;
 	let geoLayer: L.GeoJSON;
-	const cityNames = taiwanDistricts.map((city) => city.name);
+	let geo: GeoJsonObject | null = null;
+	let taiwanDistricts: Array<{ name: string }> = [];
+	let cityNames = $state<string[]>([]);
 
 	const initialView = { lat: 23.5283, lng: 120.9795 };
 
@@ -55,20 +55,40 @@
 	};
 	const mapAction: Action<HTMLDivElement, { someProperty: boolean } | undefined> = (node) => {
 		map = createMap(node);
-		geoLayer = L.geoJSON(geo as GeoJsonObject, {
-			onEachFeature,
-			style: { fillColor: 'transparent' }
-		});
-		geoLayer.addTo(map);
+
+		// 當 geo 數據加載完成後添加圖層
+		const addGeoLayer = () => {
+			if (geo && !geoLayer) {
+				geoLayer = L.geoJSON(geo as GeoJsonObject, {
+					onEachFeature,
+					style: { fillColor: 'transparent' }
+				});
+				geoLayer.addTo(map);
+			}
+		};
+
+		// 立即檢查是否已有數據
+		addGeoLayer();
+
+		// 監聽數據變化
+		const checkInterval = setInterval(() => {
+			if (geo && !geoLayer) {
+				addGeoLayer();
+				clearInterval(checkInterval);
+			}
+		}, 100);
+
 		return {
 			destroy: () => {
-				map.remove();
+				clearInterval(checkInterval);
+				if (map) {
+					map.remove();
+				}
 			}
 		};
 	};
 
 	let weatherData = $state<WeatherResponse>();
-	let error = null;
 	let showData:
 		| {
 				locationName: string;
@@ -82,6 +102,8 @@
 	};
 
 	const showCity = (city: string) => {
+		if (!geoLayer) return;
+
 		geoLayer.eachLayer((layer) => {
 			const a = layer as FeatureGroup;
 			const layerName = _.get(a, 'feature.properties.NAME_2014');
@@ -105,10 +127,21 @@
 
 	onMount(async () => {
 		try {
+			// 獲取天氣數據
 			const { data } = await fetchWeatherData();
 			weatherData = data;
+
+			// 獲取地理數據
+			const [geoResponse, districtsResponse] = await Promise.all([
+				fetch('/taiwan_geo.json'),
+				fetch('/taiwan_districts.json')
+			]);
+
+			geo = await geoResponse.json();
+			taiwanDistricts = await districtsResponse.json();
+			cityNames = taiwanDistricts.map((city) => city.name);
 		} catch (err) {
-			error = err;
+			console.error('Failed to fetch data:', err);
 		}
 	});
 </script>

@@ -22,9 +22,9 @@
 		<a href="##" class="text-foreground transition-colors hover:text-foreground"> Weather </a>
 	</nav>
 	<Sheet.Root>
-		<Sheet.Trigger asChild>
-			{#snippet children({ builder })}
-				<Button variant="outline" size="icon" class="shrink-0 md:hidden" builders={[builder]}>
+		<Sheet.Trigger>
+			{#snippet child({ props })}
+				<Button variant="outline" size="icon" class="shrink-0 md:hidden" {...props}>
 					<Menu class="h-5 w-5" />
 					<span class="sr-only">Toggle navigation menu</span>
 				</Button>
@@ -53,9 +53,9 @@
 				</div>
 			</form> -->
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild>
-				{#snippet children({ builder })}
-					<Button builders={[builder]} variant="outline" size="icon">
+			<DropdownMenu.Trigger>
+				{#snippet child({ props })}
+					<Button {...props} variant="outline" size="icon">
 						<Sun
 							class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
 						/>
@@ -67,15 +67,15 @@
 				{/snippet}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
-				<DropdownMenu.Item on:click={() => setMode('light')}>Light</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => setMode('dark')}>Dark</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => resetMode()}>System</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => setMode('light')}>Light</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => setMode('dark')}>Dark</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => resetMode()}>System</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild>
-				{#snippet children({ builder })}
-					<Button builders={[builder]} variant="secondary" size="icon" class="rounded-full">
+			<DropdownMenu.Trigger>
+				{#snippet child({ props })}
+					<Button {...props} variant="secondary" size="icon" class="rounded-full">
 						<CircleUser class="h-5 w-5" />
 						<span class="sr-only">Toggle user menu</span>
 					</Button>
