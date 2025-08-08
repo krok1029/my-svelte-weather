@@ -1,38 +1,49 @@
-# create-svelte
+# My Svelte Weather
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+My Svelte Weather is an interactive weather forecast application built with SvelteKit, Tailwind CSS, and Leaflet. It retrieves 36-hour forecasts from Taiwan's Central Weather Administration and displays them on an interactive map.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Browse Taiwan's cities on an interactive map
+- View detailed 36-hour forecast for a selected city, including temperature and conditions
+- Built with SvelteKit, TypeScript and Tailwind CSS
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+## Setup
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+1. Install dependencies:
 
-## Developing
+   ```bash
+   yarn install
+   ```
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+2. Create a `.env` file in the project root with your CWA API token:
 
-```bash
-npm run dev
+   ```
+   PUBLIC_API_TOKEN=your_token_here
+   ```
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Development
 
-## Building
-
-To create a production version of your app:
+Start a development server at <http://localhost:5173>:
 
 ```bash
-npm run build
+yarn dev
 ```
 
-You can preview the production build with `npm run preview`.
+Use `yarn dev --open` to open the app in a new browser tab.
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## Production
+
+Create an optimized production build:
+
+```bash
+yarn build
+```
+
+Preview the production build locally:
+
+```bash
+yarn preview
+```
+
+To deploy to a specific environment, install the appropriate [SvelteKit adapter](https://kit.svelte.dev/docs/adapters).
