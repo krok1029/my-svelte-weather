@@ -6,7 +6,7 @@ import type {
 	ParameterWx,
 	WeatherLocation,
 	WeatherTimeElement
-} from '@/weatherType';
+} from '@/types/weatherType';
 
 export function formatDateTime(datetime: string): string {
 	const date = new Date(datetime);

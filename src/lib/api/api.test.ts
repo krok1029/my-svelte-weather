@@ -6,7 +6,7 @@ vi.mock('$env/dynamic/public', () => ({
 }));
 
 import axios from 'axios';
-import { fetchWeatherData } from './api';
+import { fetchWeatherData } from '.';
 
 const mockedAxios = vi.mocked(axios);
 const mockedAxiosGet = vi.mocked(axios.get);
