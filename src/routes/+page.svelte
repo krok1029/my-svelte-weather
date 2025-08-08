@@ -116,26 +116,41 @@
 		<Card.Root class="m-3 p-3">
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>天氣預報</Card.Title>
-					<Card.Description>今日天氣</Card.Description>
+					<Card.Title>
+						{weatherData?.records.datasetDescription ?? '天氣預報'}
+					</Card.Title>
+					<Card.Description>請選擇縣市查看天氣資訊</Card.Description>
 				</Card.Header>
 				<Card.Content class="flex w-full flex-wrap gap-1"
 					>{#if !!showData}
-						<Card.Description>{showData.locationName}</Card.Description>
+						<Card.Description>縣市：{showData.locationName}</Card.Description>
 						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 							{#each showData.timeElementsMap as range}
 								<Card.Root>
-									<Card.Header
-										><Card.Title>
+									<Card.Header>
+										<Card.Title>
 											{`${range.startTime}~${range.endTime}`}
-										</Card.Title></Card.Header
-									>
+										</Card.Title>
+									</Card.Header>
 									<Card.Content>
 										<ul>
-											<li>CI: {range.CI?.parameterName}</li>
-											<li>MaxT: {range.MaxT?.parameterName} ˚C</li>
-											<li>MinT: {range.MinT?.parameterName} ˚C</li>
-											<li>Wx: {range.Wx?.parameterName}</li>
+											<li>
+												天氣現象：{range.Wx?.parameterName}
+											</li>
+											<li>
+												降雨機率：{range.Pop
+													? `${range.Pop.parameterName}${range.Pop.parameterUnit}`
+													: ''}
+											</li>
+											<li>
+												最高溫：{range.MaxT ? `${range.MaxT.parameterName}°C` : ''}
+											</li>
+											<li>
+												最低溫：{range.MinT ? `${range.MinT.parameterName}°C` : ''}
+											</li>
+											<li>
+												舒適度：{range.CI?.parameterName}
+											</li>
 										</ul>
 									</Card.Content>
 								</Card.Root>
