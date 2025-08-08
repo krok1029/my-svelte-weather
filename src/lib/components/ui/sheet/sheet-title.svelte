@@ -1,22 +1,17 @@
 <script lang="ts">
-	import { Dialog as SheetPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils.js';
+	import { Dialog as SheetPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
 
-	type $$Props = SheetPrimitive.TitleProps;
-
-	interface Props {
-		class?: $$Props['class'];
-		children?: import('svelte').Snippet;
-		[key: string]: any
-	}
-
-	let { class: className = undefined, children, ...rest }: Props = $props();
-	
+	let {
+		ref = $bindable(null),
+		class: className,
+		...restProps
+	}: SheetPrimitive.TitleProps = $props();
 </script>
 
 <SheetPrimitive.Title
-	class={cn('text-lg font-semibold text-foreground', className)}
-	{...rest}
->
-	{@render children?.()}
-</SheetPrimitive.Title>
+	bind:ref
+	data-slot="sheet-title"
+	class={cn("text-foreground font-semibold", className)}
+	{...restProps}
+/>

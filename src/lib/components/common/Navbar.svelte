@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { setMode, resetMode } from 'mode-watcher';
-	import Sun from 'lucide-svelte/icons/sun';
-	import Moon from 'lucide-svelte/icons/moon';
-	import CloudSun from 'lucide-svelte/icons/cloud-sun';
-	import Menu from 'lucide-svelte/icons/menu';
-	import CircleUser from 'lucide-svelte/icons/circle-user';
+	import Sun from '@lucide/svelte/icons/sun';
+	import Moon from '@lucide/svelte/icons/moon';
+	import CloudSun from '@lucide/svelte/icons/cloud-sun';
+	import Menu from '@lucide/svelte/icons/menu';
+	import CircleUser from '@lucide/svelte/icons/circle-user';
 
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';

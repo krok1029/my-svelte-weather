@@ -10,8 +10,8 @@
 	import taiwanDistricts from '$lib/taiwan_districts.json';
 	import { onMount } from 'svelte';
 	import { fetchWeatherData } from '$lib/api';
-	import type { WeatherResponse, WeatherTimeElement } from '@/lib/weatherType';
-	import weatherFactory from '@/lib/Factory/WeatherLocationFactory';
+	import type { WeatherResponse, WeatherTimeElement } from '@/weatherType';
+	import weatherFactory from '@/Factory/WeatherLocationFactory';
 
 	let map: L.Map;
 	let geoLayer: L.GeoJSON;
