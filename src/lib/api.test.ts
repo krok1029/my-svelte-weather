@@ -9,11 +9,12 @@ import axios from 'axios';
 import { fetchWeatherData } from './api';
 
 const mockedAxios = vi.mocked(axios);
+const mockedAxiosGet = vi.mocked(axios.get);
 
 describe('fetchWeatherData', () => {
 	it('calls API with token and returns data', async () => {
 		const mockData = { foo: 'bar' };
-		mockedAxios.get.mockResolvedValue({ data: mockData });
+		mockedAxiosGet.mockResolvedValue({ data: mockData });
 
 		const result = await fetchWeatherData();
 
@@ -26,7 +27,7 @@ describe('fetchWeatherData', () => {
 
 	it('logs and rethrows errors', async () => {
 		const error = new Error('Network error');
-		mockedAxios.get.mockRejectedValue(error);
+		mockedAxiosGet.mockRejectedValue(error);
 		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 		await expect(fetchWeatherData()).rejects.toThrow(error);
