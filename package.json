@@ -13,7 +13,15 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
-		"test:unit": "vitest"
+		"test:unit": "vitest",
+		"test:ui": "playwright test test.ts",
+		"test:weather": "playwright test weather-card.test.ts",
+		"test:map": "playwright test map.test.ts",
+		"test:api": "playwright test api.test.ts",
+		"test:headed": "playwright test --headed",
+		"test:debug": "playwright test --debug",
+		"test:report": "playwright show-report",
+		"test:install": "playwright install"
 	},
 	"devDependencies": {
 		"@internationalized/date": "^3.8.1",
