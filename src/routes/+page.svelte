@@ -131,8 +131,11 @@
 			</Card.Root>
 			<Card.Content class="mt-3 flex w-full flex-wrap gap-1">
 				{#each cityNames as name}
-					<Button onclick={() => handleBtnClick(name)} variant="secondary">
-						<span class="sr-only">{name}</span>
+					<Button
+						aria-label={`查看 ${name} 的天氣`}
+						onclick={() => handleBtnClick(name)}
+						variant="secondary"
+					>
 						<p>{name}</p>
 					</Button>
 				{/each}
