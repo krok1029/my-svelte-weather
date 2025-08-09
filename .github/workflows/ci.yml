@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Check if TypeScript config exists
+        id: check-ts
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            echo "has-ts=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-ts=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if ESLint config exists
+        id: check-eslint
+        run: |
+          if ls .eslintrc* 1> /dev/null 2>&1 || ls eslint.config.* 1> /dev/null 2>&1; then
+            echo "has-eslint=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-eslint=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if Playwright config exists
+        id: check-playwright
+        run: |
+          if ls playwright.config.* 1> /dev/null 2>&1; then
+            echo "has-playwright=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-playwright=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: TypeScript type check
+        if: steps.check-ts.outputs.has-ts == 'true'
+        run: yarn check
+
+      - name: ESLint check
+        if: steps.check-eslint.outputs.has-eslint == 'true'
+        run: yarn lint
+
+      - name: Install Playwright browsers
+        if: steps.check-playwright.outputs.has-playwright == 'true'
+        run: yarn test:install
+
+      - name: Run tests
+        run: yarn test
+        env:
+          PUBLIC_API_TOKEN: ${{ secrets.PUBLIC_API_TOKEN }}
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage/
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+      - name: Upload Playwright report
+        if: failure() && steps.check-playwright.outputs.has-playwright == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
