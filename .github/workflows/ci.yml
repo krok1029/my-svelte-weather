@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Check if TypeScript config exists
+        id: check-ts
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            echo "has-ts=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-ts=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if ESLint config exists
+        id: check-eslint
+        run: |
+          if ls .eslintrc* 1> /dev/null 2>&1 || ls eslint.config.* 1> /dev/null 2>&1; then
+            echo "has-eslint=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-eslint=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if Playwright config exists
+        id: check-playwright
+        run: |
+          if ls playwright.config.* 1> /dev/null 2>&1; then
+            echo "has-playwright=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-playwright=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: TypeScript type check
+        if: steps.check-ts.outputs.has-ts == 'true'
+        run: yarn check
+
+      - name: ESLint check
+        if: steps.check-eslint.outputs.has-eslint == 'true'
+        run: yarn format && yarn lint
+
+      # ⭐ 使用新的 Playwright 安裝方式
+      - name: Install Playwright browsers
+        if: steps.check-playwright.outputs.has-playwright == 'true'
+        run: npx playwright install --with-deps
+
+      # 你的 playwright.config.ts 已經有 webServer 設定，會自動 build + preview
+      # 所以不需要手動啟動 server
+
+      - name: Run tests
+        env:
+          PUBLIC_API_TOKEN: ${{ secrets.PUBLIC_API_TOKEN }}
+          CI: true
+        run: yarn test
+
+      # 失敗時上傳報告與 trace，方便你用 "yarn playwright show-trace" 來看
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            coverage/
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
