@@ -56,7 +56,7 @@ jobs:
 
       - name: ESLint check
         if: steps.check-eslint.outputs.has-eslint == 'true'
-        run: yarn lint
+        run: yarn format && yarn lint
 
       - name: Install Playwright browsers
         if: steps.check-playwright.outputs.has-playwright == 'true'
