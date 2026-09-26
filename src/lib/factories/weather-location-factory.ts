@@ -2,7 +2,7 @@ import type {
 	ParameterCI,
 	ParameterMaxT,
 	ParameterMinT,
-	ParameterPop,
+	ParameterPoP,
 	ParameterWx,
 	WeatherLocation,
 	WeatherTimeElement
@@ -35,8 +35,8 @@ const factory = (location: WeatherLocation) => {
 				case 'Wx':
 					timeElementsMap[key].Wx = parameter as ParameterWx;
 					break;
-				case 'Pop':
-					timeElementsMap[key].Pop = parameter as ParameterPop;
+				case 'PoP':
+					timeElementsMap[key].PoP = parameter as ParameterPoP;
 					break;
 				case 'MinT':
 					timeElementsMap[key].MinT = parameter as ParameterMinT;
