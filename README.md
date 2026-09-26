@@ -42,8 +42,12 @@ My Svelte Weather 是一個使用 SvelteKit 建置的互動式天氣預報網站
 
 ## 快速開始
 
-1. 安裝依賴
+1. 使用 Node.js 24 並安裝依賴
    ```bash
+   nvm install
+   nvm use
+   npm install --global corepack
+   corepack enable
    yarn install
    ```
 2. 在專案根目錄建立 `.env` 並設定中央氣象局 API Token

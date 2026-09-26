@@ -17,11 +17,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'yarn'
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack
+        run: |
+          npm install --global corepack
+          corepack enable
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Check if TypeScript config exists
         id: check-ts
