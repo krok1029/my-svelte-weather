@@ -45,11 +45,7 @@ export type WeatherLocation = {
 };
 
 export type WeatherElement =
-	| WeatherElementWx
-	| WeatherElementPop
-	| WeatherElementMinT
-	| WeatherElementCI
-	| WeatherElementMaxT;
+	WeatherElementWx | WeatherElementPop | WeatherElementMinT | WeatherElementCI | WeatherElementMaxT;
 
 export type WeatherElementWx = {
 	elementName: 'Wx';

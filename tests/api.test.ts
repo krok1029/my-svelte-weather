@@ -30,7 +30,7 @@ test.describe('API 和資料載入測試', () => {
 			} else {
 				console.warn('天氣資料載入但無天氣卡片顯示');
 			}
-		} catch (error) {
+		} catch {
 			// 如果縣市資訊沒有顯示，表示天氣 API 可能載入失敗
 			console.warn('天氣 API 可能載入失敗：無法顯示縣市天氣資訊');
 
