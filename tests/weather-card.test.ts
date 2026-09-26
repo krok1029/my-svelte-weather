@@ -1,84 +1,56 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, weatherEnvelope, weatherFixture } from './fixtures';
 
-test.describe('天氣卡片功能測試', () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto('/');
-	});
+test('三個時段顯示真實 PoP 欄位、零降雨機率與溫度', async ({ page }) => {
+	// GIVEN: The CWA-shaped fixture includes 20%, 0%, and 60% probabilities.
+	await page.goto('/');
 
-	test('天氣卡片顯示完整資訊', async ({ page }) => {
-		// 等待並點擊縣市按鈕
-		await expect(page.getByRole('button', { name: '查看 臺北市 的天氣' })).toBeVisible({
-			timeout: 15000
-		});
+	// WHEN: Selecting Taipei.
+	await page.getByRole('button', { name: '查看 臺北市 的天氣', exact: true }).click();
 
-		const firstButton = page.getByRole('button', { name: '查看 臺北市 的天氣' });
-		const cityName = await firstButton.textContent();
-		await firstButton.click();
+	// THEN: Each forecast carries the exact time and weather values.
+	const cards = page.getByRole('article');
+	await expect(cards).toHaveCount(3);
+	await expect(cards.nth(0)).toContainText('09/26 12:00~09/26 18:00');
+	await expect(cards.nth(1)).toContainText('09/26 18:00~09/27 06:00');
+	await expect(cards.nth(2)).toContainText('09/27 06:00~09/27 18:00');
+	await expect(cards.nth(0)).toContainText('降雨機率：20百分比');
+	await expect(cards.nth(1)).toContainText('降雨機率：0百分比');
+	await expect(cards.nth(2)).toContainText('降雨機率：60百分比');
+	await expect(cards.nth(0)).toContainText('天氣現象：晴時多雲');
+	await expect(cards.nth(0)).toContainText('最高溫：30°C');
+	await expect(cards.nth(0)).toContainText('低溫：25°C');
+	await expect(cards.nth(0)).toContainText('舒適度：舒適');
+});
 
-		// 等待天氣資訊載入
-		await expect(page.getByText(`縣市：${cityName}`)).toBeVisible({
-			timeout: 10000
-		});
+test('缺少降雨機率時明確顯示暫無資料', async ({ page }) => {
+	// GIVEN: Taipei has forecast periods but no PoP element.
+	const data = structuredClone(weatherFixture);
+	data.records.location[0].weatherElement = data.records.location[0].weatherElement.filter(
+		(element) => element.elementName !== 'PoP'
+	);
+	await page.route('**/api/weather', (route) => route.fulfill({ json: weatherEnvelope(data) }));
+	await page.goto('/');
 
-		// 檢查天氣卡片網格
-		const weatherGrid = page.locator('[class*="grid"][class*="gap-4"]');
-		await expect(weatherGrid).toBeVisible({ timeout: 5000 });
+	// WHEN: Selecting the city with incomplete data.
+	await page.getByRole('button', { name: '查看 臺北市 的天氣', exact: true }).click();
 
-		// 檢查是否有天氣卡片
-		const weatherCards = weatherGrid.locator('> *');
-		const cardCount = await weatherCards.count();
-		expect(cardCount).toBeGreaterThan(0);
-	});
+	// THEN: Missing precipitation is distinguished from zero.
+	await expect(page.getByRole('article')).toHaveCount(3);
+	await expect(page.getByText('降雨機率：暫無資料', { exact: true })).toHaveCount(3);
+	await expect(page.getByText('降雨機率：0百分比', { exact: true })).toHaveCount(0);
+});
 
-	test('36小時預報資料完整性', async ({ page }) => {
-		// 點擊縣市並等待資料載入
-		await expect(page.getByRole('button', { name: '查看 臺北市 的天氣' })).toBeVisible({
-			timeout: 15000
-		});
+test('選擇沒有預報的縣市會清除前一縣市卡片', async ({ page }) => {
+	// GIVEN: Taipei's cards are visible and the fixture has no Kaohsiung forecast.
+	await page.goto('/');
+	await page.getByRole('button', { name: '查看 臺北市 的天氣', exact: true }).click();
+	await expect(page.getByRole('article')).toHaveCount(3);
 
-		const firstButton = page.getByRole('button', { name: '查看 臺北市 的天氣' });
-		await firstButton.click();
+	// WHEN: Selecting Kaohsiung.
+	await page.getByRole('button', { name: '查看 高雄市 的天氣', exact: true }).click();
 
-		// 等待天氣卡片載入
-		await page.waitForTimeout(3000);
-
-		const weatherCards = page.locator('[class*="grid"][class*="gap-4"] > *');
-		const cardCount = await weatherCards.count();
-
-		// 36小時預報通常會有多個時間段
-		if (cardCount > 0) {
-			expect(cardCount).toBeLessThanOrEqual(36); // 最多36個小時
-			expect(cardCount).toBeGreaterThan(0); // 至少要有一個
-		}
-	});
-
-	test('不同縣市天氣資料切換', async ({ page }) => {
-		const buttons = page.getByRole('button', { name: /查看 .* 的天氣/ });
-		await expect(buttons.first()).toBeVisible({ timeout: 15000 });
-
-		const buttonCount = await buttons.count();
-
-		if (buttonCount >= 3) {
-			// 測試前三個縣市
-			for (let i = 0; i < 3; i++) {
-				const button = buttons.nth(i);
-				const cityName = await button.textContent();
-				await button.click();
-
-				// 等待該縣市的天氣資訊顯示
-				await expect(page.getByText(`縣市：${cityName}`)).toBeVisible({
-					timeout: 10000
-				});
-
-				// 檢查天氣卡片是否更新
-				await page.waitForTimeout(1000);
-				const weatherCards = page.locator('[class*="grid"][class*="gap-4"] > *');
-				const cardCount = await weatherCards.count();
-
-				if (cardCount > 0) {
-					await expect(weatherCards.first()).toBeVisible();
-				}
-			}
-		}
-	});
+	// THEN: An explicit empty state replaces the previous city's data.
+	await expect(page.getByText('暫無 高雄市 的天氣資料。', { exact: true })).toBeVisible();
+	await expect(page.getByRole('article')).toHaveCount(0);
+	await expect(page.getByText('縣市：臺北市', { exact: true })).toHaveCount(0);
 });

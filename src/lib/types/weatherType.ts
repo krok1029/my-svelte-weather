@@ -34,7 +34,7 @@ export type WeatherTimeElement = {
 	startTime: string;
 	endTime: string;
 	Wx?: ParameterWx;
-	Pop?: ParameterPop;
+	PoP?: ParameterPoP;
 	MinT?: ParameterMinT;
 	CI?: ParameterCI;
 	MaxT?: ParameterMaxT;
@@ -45,7 +45,7 @@ export type WeatherLocation = {
 };
 
 export type WeatherElement =
-	WeatherElementWx | WeatherElementPop | WeatherElementMinT | WeatherElementCI | WeatherElementMaxT;
+	WeatherElementWx | WeatherElementPoP | WeatherElementMinT | WeatherElementCI | WeatherElementMaxT;
 
 export type WeatherElementWx = {
 	elementName: 'Wx';
@@ -57,12 +57,12 @@ export type ParameterWx = {
 	parameterValue: string;
 };
 
-export type WeatherElementPop = {
-	elementName: 'Pop';
-	time: Array<{ startTime: string; endTime: string; parameter: ParameterPop }>;
+export type WeatherElementPoP = {
+	elementName: 'PoP';
+	time: Array<{ startTime: string; endTime: string; parameter: ParameterPoP }>;
 };
 
-export type ParameterPop = {
+export type ParameterPoP = {
 	parameterName: string;
 	parameterUnit: string;
 };
