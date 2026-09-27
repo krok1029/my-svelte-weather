@@ -140,3 +140,26 @@ test('小螢幕搜尋結果可觸控選取且不橫向溢出', async ({ page, is
 		.locator('.location-search')
 		.screenshot({ path: testInfo.outputPath('search-landscape-dark.png') });
 });
+
+test('搜尋選取與常用地點、網址、返回及重新整理保持同步', async ({ page }) => {
+	await page.goto('/');
+	const input = page.getByRole('combobox', { name: '搜尋縣市或行政區', exact: true });
+	await input.fill('內湖');
+	await input.press('Enter');
+	await expect.poll(() => new URL(page.url()).searchParams.get('district')).toBe('內湖區');
+	await page.getByRole('button', { name: '加入常用', exact: true }).click();
+	await input.fill('西屯');
+	await input.press('Enter');
+	await expect.poll(() => new URL(page.url()).searchParams.get('district')).toBe('西屯區');
+	await expect(page.locator('.map')).toHaveAttribute('data-selected-city', '臺中市');
+	await page.goBack();
+	await expect(page.locator('.map')).toHaveAttribute('data-selected-district', '內湖區');
+	await expect(page.getByRole('combobox', { name: '選擇縣市', exact: true })).toHaveValue('臺北市');
+	await page.reload();
+	await expect(page.getByRole('article')).toContainText('29–30°C');
+	await page.getByRole('button', { name: '全臺總覽', exact: true }).click();
+	await page.locator('.saved-places summary').click();
+	await page.getByRole('button', { name: '臺北市 · 內湖區', exact: true }).click();
+	await expect(page.locator('.map')).toHaveAttribute('data-selected-district', '內湖區');
+	await expect.poll(() => new URL(page.url()).searchParams.get('district')).toBe('內湖區');
+});
