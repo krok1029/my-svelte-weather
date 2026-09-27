@@ -18,8 +18,13 @@
 	import Compass from '@lucide/svelte/icons/compass';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import weatherFactory from '@/factories/weather-location-factory';
+	import { formatForecastTime, shouldRefreshWeather } from '$lib/weather/freshness';
 
 	const lifetime = new AbortController();
+	let now = $state(Date.now());
+	let weatherPending = false;
+	let weatherLastAttempt: number | null = null;
+	let districtLastAttempt: number | null = null;
 	let geo = $state.raw<FeatureCollection | null>(null);
 	let cities = $state<Array<{ name: string; districts: Array<{ name: string }> }>>([]);
 	const cityNames = $derived(cities.map((city) => city.name));
@@ -61,7 +66,7 @@
 	const selectedLocation = $derived(
 		weatherData?.records.location.find(({ locationName }) => locationName === selectedCity)
 	);
-	const showData = $derived(selectedLocation ? weatherFactory(selectedLocation) : undefined);
+	const showData = $derived(selectedLocation ? weatherFactory(selectedLocation, now) : undefined);
 	const retrievedTime = $derived(
 		activeUpdatedAt
 			? new Intl.DateTimeFormat('zh-TW', {
@@ -84,6 +89,7 @@
 		boundaryError = false;
 		boundaryLoading = false;
 		selectedCity = city;
+		districtLastAttempt = null;
 		districtData = undefined;
 		districtError = false;
 		districtLoading = false;
@@ -99,6 +105,8 @@
 	}
 
 	async function loadDistricts(city: string) {
+		if (districtLoading && !districtRequest?.signal.aborted) return;
+		districtLastAttempt = Date.now();
 		districtRequest?.abort();
 		const request = new AbortController();
 		districtRequest = request;
@@ -153,9 +161,18 @@
 	}
 
 	const districtNow = $derived(
-		districtForecast?.periods.find((period) => Date.parse(period.endTime) > Date.now())
+		districtForecast?.periods.find((period) => Date.parse(period.endTime) > now)
 	);
 	const countyNow = $derived(showData?.timeElementsMap[0]);
+	const summaryPeriodLabel = $derived(
+		selectedDistrict
+			? districtNow
+				? `${formatForecastTime(districtNow.startTime)} 至 ${formatForecastTime(districtNow.endTime)} 預報`
+				: '暫無未來預報'
+			: countyNow
+				? `${countyNow.startTime} 至 ${countyNow.endTime} 預報`
+				: '暫無未來預報'
+	);
 	const summaryWeather = $derived(
 		selectedDistrict ? districtNow?.weather : countyNow?.Wx?.parameterName
 	);
@@ -186,6 +203,9 @@
 	}
 
 	async function loadWeather() {
+		if (weatherPending) return;
+		weatherPending = true;
+		weatherLastAttempt = Date.now();
 		weatherLoading = true;
 		weatherError = false;
 		try {
@@ -197,6 +217,7 @@
 		} catch {
 			if (!lifetime.signal.aborted) weatherError = true;
 		} finally {
+			weatherPending = false;
 			if (!lifetime.signal.aborted) weatherLoading = false;
 		}
 	}
@@ -244,11 +265,41 @@
 		}
 	}
 
+	function refreshStaleWeather() {
+		if (shouldRefreshWeather(now, weatherLastAttempt, updatedAt, weatherStale || weatherError)) {
+			void loadWeather();
+		}
+		if (
+			selectedCity &&
+			districtSupported &&
+			shouldRefreshWeather(
+				now,
+				districtLastAttempt,
+				districtData?.updatedAt,
+				districtData?.stale || districtError
+			)
+		) {
+			void loadDistricts(selectedCity);
+		}
+	}
+
 	onMount(() => {
+		let timer: ReturnType<typeof setTimeout>;
+		const tick = () => {
+			clearTimeout(timer);
+			if (document.visibilityState !== 'visible') return;
+			now = Date.now();
+			refreshStaleWeather();
+			timer = setTimeout(tick, 60_000 - (now % 60_000));
+		};
 		void loadWeather();
 		void loadGeo();
 		void loadCities();
+		tick();
+		document.addEventListener('visibilitychange', tick);
 		return () => {
+			clearTimeout(timer);
+			document.removeEventListener('visibilitychange', tick);
 			lifetime.abort();
 			districtRequest?.abort();
 			boundaryRequest?.abort();
@@ -369,6 +420,7 @@
 					</p>{/if}
 				{#if selectedCity}
 					<WeatherSummary
+						periodLabel={summaryPeriodLabel}
 						weather={summaryWeather}
 						temperature={summaryTemperature}
 						rain={summaryRain}
@@ -459,6 +511,7 @@
 				{#if selectedDistrict}
 					{#if districtForecast}{#key `${selectedCity}/${selectedDistrict}`}<DistrictForecast
 								location={districtForecast}
+								{now}
 							/>{/key}{:else if !districtLoading && !districtError}<p
 							class="inline-status"
 							role="status"

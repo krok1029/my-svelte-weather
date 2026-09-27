@@ -160,8 +160,7 @@ a:focus-visible {
 	grid-template-columns: 370px minmax(0, 1fr);
 	grid-template-rows: auto auto minmax(180px, 1fr);
 	column-gap: 24px;
-	height: min(790px, calc(100dvh - 270px));
-	min-height: 740px;
+	min-height: max(740px, min(790px, calc(100dvh - 270px)));
 }
 .location-panel,
 .summary-panel,
@@ -432,6 +431,7 @@ a:focus-visible {
 	border-radius: 0 0 22px 22px;
 	border-top: 0;
 	padding: 20px 22px 22px;
+	max-height: 420px;
 	overflow-y: auto;
 	scrollbar-width: thin;
 	scrollbar-color: var(--border) transparent;
@@ -805,6 +805,7 @@ a:focus-visible {
 	}
 	.forecast-panel {
 		padding: 22px 20px;
+		max-height: none;
 		overflow: visible;
 	}
 	.forecast-section-title {

@@ -69,6 +69,10 @@ test('桌面維持左側摘要與預報、右側地圖', async ({ page }) => {
 	expect(summary.x + summary.width).toBeLessThan(map.x);
 	expect(details.x).toBe(summary.x);
 	expect(details.y).toBeGreaterThan(summary.y);
+	const layout = (await page.locator('.explorer-layout').boundingBox())!;
+	const footer = (await page.locator('.weather-footer').boundingBox())!;
+	expect(details.y + details.height).toBeLessThanOrEqual(layout.y + layout.height + 1);
+	expect(map.y + map.height).toBeLessThanOrEqual(footer.y);
 	await expect(page.locator('.map')).toHaveAttribute('data-ready', 'true');
 	await expect(page.locator('.map')).toHaveAttribute('data-boundaries-ready', 'true');
 	await expect(page.locator('.map')).toHaveAttribute('data-moving', 'false');
