@@ -1,4 +1,5 @@
 <script lang="ts">
+	import WeatherSummary from '$lib/components/WeatherSummary.svelte';
 	import WeatherRangeCard from '$lib/components/WeatherRangeCard.svelte';
 	import WeatherMap from '$lib/components/WeatherMap.svelte';
 	import DistrictForecast from '$lib/components/DistrictForecast.svelte';
@@ -15,8 +16,6 @@
 	import LocateFixed from '@lucide/svelte/icons/locate-fixed';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import Compass from '@lucide/svelte/icons/compass';
-	import Droplets from '@lucide/svelte/icons/droplets';
-	import Thermometer from '@lucide/svelte/icons/thermometer';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import weatherFactory from '@/factories/weather-location-factory';
 
@@ -325,6 +324,63 @@
 			{/if}
 		</section>
 
+		{#if selectedCity || weatherLoading || weatherError || districtError || activeStale}
+			<section class="summary-panel" aria-label="天氣摘要">
+				{#if selectedCity}
+					<div class="forecast-heading">
+						<div>
+							<p class="eyebrow">LOCAL FORECAST</p>
+							<h2>
+								{selectedCity}{#if selectedDistrict}<span> / {selectedDistrict}</span>{/if}
+							</h2>
+						</div>
+						<button
+							class="icon-action"
+							aria-label="更新天氣"
+							disabled={selectedDistrict ? districtLoading : weatherLoading}
+							onclick={() =>
+								selectedDistrict && selectedCity ? loadDistricts(selectedCity) : loadWeather()}
+							><RefreshCw size={17} /></button
+						>
+					</div>
+				{/if}
+				{#if weatherLoading && !selectedDistrict}<p class="inline-status" role="status">
+						天氣資料載入中…
+					</p>{/if}
+				{#if weatherError && !selectedDistrict}<div class="status-box" role="alert">
+						<span>天氣資料載入失敗，請稍後重試。</span><button
+							class="text-action"
+							onclick={loadWeather}
+							disabled={weatherLoading}>重新載入天氣</button
+						>
+					</div>{/if}
+				{#if districtLoading && selectedDistrict}<p class="inline-status" role="status">
+						行政區預報載入中…
+					</p>{/if}
+				{#if districtError}<div class="status-box" role="alert">
+						<span>行政區天氣載入失敗，請稍後重試。</span><button
+							class="text-action"
+							disabled={districtLoading}
+							onclick={() => selectedCity && loadDistricts(selectedCity)}>重新載入行政區天氣</button
+						>
+					</div>{/if}
+				{#if activeStale}<p class="status-box" role="status">
+						目前顯示快取資料，氣象服務暫時無法更新。
+					</p>{/if}
+				{#if selectedCity}
+					<WeatherSummary
+						weather={summaryWeather}
+						temperature={summaryTemperature}
+						rain={summaryRain}
+						comfort={summaryComfort}
+						comfortLabel={selectedDistrict ? '體感溫度' : '舒適度'}
+						loading={selectedDistrict ? districtLoading : weatherLoading}
+						error={selectedDistrict ? districtError : weatherError}
+					/>
+				{/if}
+			</section>
+		{/if}
+
 		<section class="map-panel" aria-label="互動地圖">
 			<div class="map-toolbar">
 				<div class="map-heading">
@@ -392,74 +448,6 @@
 					<p>選擇縣市或點選地圖，<br />讓下一段行程多一點準備。</p>
 					<div class="empty-detail">
 						<span>縣市 36 小時預報</span><span>行政區逐 3 小時預報</span>
-					</div>
-				</div>
-			{:else}
-				<div class="forecast-heading">
-					<div>
-						<p class="eyebrow">LOCAL FORECAST</p>
-						<h2>
-							{selectedCity}{#if selectedDistrict}<span> / {selectedDistrict}</span>{/if}
-						</h2>
-					</div>
-					<button
-						class="icon-action"
-						aria-label="更新天氣"
-						disabled={selectedDistrict ? districtLoading : weatherLoading}
-						onclick={() =>
-							selectedDistrict && selectedCity ? loadDistricts(selectedCity) : loadWeather()}
-						><RefreshCw size={17} /></button
-					>
-				</div>
-			{/if}
-			{#if weatherLoading && !selectedDistrict}<p class="inline-status" role="status">
-					天氣資料載入中…
-				</p>{/if}
-			{#if weatherError && !selectedDistrict}<div class="status-box" role="alert">
-					<span>天氣資料載入失敗，請稍後重試。</span><button
-						class="text-action"
-						onclick={loadWeather}
-						disabled={weatherLoading}>重新載入天氣</button
-					>
-				</div>{/if}
-			{#if districtLoading && selectedDistrict}<p class="inline-status" role="status">
-					行政區預報載入中…
-				</p>{/if}
-			{#if districtError}<div class="status-box" role="alert">
-					<span>行政區天氣載入失敗，請稍後重試。</span><button
-						class="text-action"
-						disabled={districtLoading}
-						onclick={() => selectedCity && loadDistricts(selectedCity)}>重新載入行政區天氣</button
-					>
-				</div>{/if}
-			{#if activeStale}<p class="status-box" role="status">
-					目前顯示快取資料，氣象服務暫時無法更新。
-				</p>{/if}
-			{#if selectedCity && summaryTemperature}
-				<div class="weather-summary">
-					<div class="summary-top">
-						<span>最近時段預報</span><span>{summaryWeather ?? '暫無資料'}</span>
-					</div>
-					<div class="summary-main">
-						<strong>{summaryTemperature}<small>°C</small></strong><span class="summary-icon"
-							><WeatherSymbol weather={summaryWeather} size={55} /></span
-						>
-					</div>
-					<div class="summary-metrics">
-						<div>
-							<Droplets size={16} /><span
-								>降雨機率<strong
-									>{summaryRain !== null && summaryRain !== undefined
-										? `${summaryRain}%`
-										: '暫無資料'}</strong
-								></span
-							>
-						</div>
-						<div>
-							<Thermometer size={16} /><span
-								>{selectedDistrict ? '體感溫度' : '舒適度'}<strong>{summaryComfort}</strong></span
-							>
-						</div>
 					</div>
 				</div>
 			{/if}
