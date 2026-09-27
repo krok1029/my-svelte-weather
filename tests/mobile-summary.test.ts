@@ -58,11 +58,25 @@ for (const viewport of [
 	});
 }
 
-test('桌面維持左側摘要與預報、右側地圖', async ({ page }) => {
+test('桌面展開常用地點後仍維持左側摘要與預報、右側地圖且不壓到頁尾', async ({ page }) => {
 	await page.setViewportSize({ width: 1440, height: 1000 });
+	await page.addInitScript(() => {
+		localStorage.setItem(
+			'island-weather.places.v1',
+			JSON.stringify({
+				selected: null,
+				favorites: ['臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市'].map((city) => ({
+					city,
+					district: null
+				}))
+			})
+		);
+	});
 	await page.goto('/');
 	await page.getByRole('combobox', { name: '選擇縣市', exact: true }).selectOption('臺北市');
 	await expect(page.locator('.weather-summary')).toContainText('25–30°C');
+	await page.locator('.saved-places summary').click();
+	await expect(page.getByRole('list', { name: '常用地點', exact: true })).toBeVisible();
 	const summary = (await page.locator('.summary-panel').boundingBox())!;
 	const map = (await page.locator('.map-panel').boundingBox())!;
 	const details = (await page.locator('.forecast-panel').boundingBox())!;
