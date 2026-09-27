@@ -8,7 +8,9 @@ import math
 from pathlib import Path
 
 import shapely
-from shapely.geometry import mapping, shape
+from shapely.geometry import shape
+
+from map_precision import rounded_geometry
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "data/taiwan_geo.source.json.gz"
@@ -94,12 +96,15 @@ def main():
             max_error = max(max_error, ring_error(source_ring, result_ring))
     require(max_error <= MAX_ERROR_DEGREES, "Displacement exceeded the configured bound")
 
+    rounded = [rounded_geometry(geometry, decimals=6) for geometry in simplified]
+    max_rounding_error = max(error for _, error in rounded)
+    require(max_error + max_rounding_error <= MAX_ERROR_DEGREES, "Combined displacement exceeded bound")
     result = {
         "type": "FeatureCollection",
         "features": [
             {"type": "Feature", "properties": {"NAME_2014": feature["properties"]["NAME_2014"]},
-             "geometry": mapping(geometry)}
-            for feature, geometry in zip(data["features"], simplified)
+             "geometry": geometry}
+            for feature, (geometry, _) in zip(data["features"], rounded)
         ],
     }
     encoded = (json.dumps(result, ensure_ascii=False, separators=(",", ":")) + "\n").encode()
@@ -113,8 +118,10 @@ def main():
     print(json.dumps({
         "shapely": shapely.__version__, "geos": shapely.geos_version_string,
         "before": metrics(source_bytes, original), "after": metrics(encoded, reloaded),
-        "max_displacement_degrees": max_error,
-        "max_displacement_metres_upper_bound": max_error * 111700,
+        "max_simplification_displacement_degrees": max_error,
+        "max_rounding_displacement_degrees": max_rounding_error,
+        "max_displacement_degrees": max_error + max_rounding_error,
+        "max_displacement_metres_upper_bound": (max_error + max_rounding_error) * 111700,
         "valid_geometries": True, "valid_shared_boundary_coverage": True,
     }, indent=2))
 

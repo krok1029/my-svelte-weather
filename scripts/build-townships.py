@@ -9,7 +9,9 @@ from pathlib import Path
 
 import shapefile
 import shapely
-from shapely.geometry import shape, mapping
+from shapely.geometry import shape
+
+from map_precision import rounded_geometry
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / 'data/townships.source.zip'
@@ -28,6 +30,7 @@ def main():
     reader = shapefile.Reader(**{ext: archive.open(f'{base}.{ext}') for ext in ['shp', 'shx', 'dbf']}, encoding='utf-8')
     counties = defaultdict(list)
     manifest = {}
+    max_rounding_error = 0.0
     assert len(reader) == 368
     for item in reader.iterShapeRecords():
         props = item.record.as_dict()
@@ -39,10 +42,12 @@ def main():
         assert original.geom_type == geometry.geom_type
         if original.geom_type == 'MultiPolygon':
             assert len(original.geoms) == len(geometry.geoms)
+        rounded, rounding_error = rounded_geometry(geometry)
+        max_rounding_error = max(max_rounding_error, rounding_error)
         county = props['COUNTYCODE']
         counties[county].append({'type': 'Feature', 'properties': {
             'city': props['COUNTYNAME'], 'name': props['TOWNNAME'], 'code': props['TOWNCODE']
-        }, 'geometry': mapping(geometry)})
+        }, 'geometry': rounded})
         manifest[props['COUNTYNAME']] = f'/boundaries/{county}.json'
     assert len(counties) == 22
     outputs = {f'{code}.json': {'type': 'FeatureCollection', 'features': features} for code, features in counties.items()}
@@ -55,6 +60,7 @@ def main():
             assert path.read_bytes() == encoded, f'Outdated {path}'
         else:
             path.write_bytes(encoded)
+    print(f'Maximum rounding displacement: {max_rounding_error * 111700:.6f} metres')
     print(f'{len(counties)} counties / {len(reader)} townships / {sum((OUTPUT / n).stat().st_size for n in outputs):,} bytes')
 
 

@@ -1,5 +1,7 @@
+// Compare county geometry assets on one production build; routes isolate data processing cost.
 import { readFile } from 'node:fs/promises';
-import { gunzipSync } from 'node:zlib';
+import { gzipSync } from 'node:zlib';
+import { execFileSync } from 'node:child_process';
 import { cpus, platform, arch } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
@@ -9,8 +11,20 @@ import { preview } from 'vite';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const samples = Number(process.env.MAP_BENCHMARK_SAMPLES ?? 5);
 if (!Number.isInteger(samples) || samples < 3) throw new Error('Use at least three samples');
+const baselineRef = process.env.MAP_BENCHMARK_BASELINE_REF;
+if (!baselineRef) throw new Error('Set MAP_BENCHMARK_BASELINE_REF to the commit being compared');
+const baselineCommit = execFileSync(
+	'git',
+	['rev-parse', '--verify', '--end-of-options', `${baselineRef}^{commit}`],
+	{ cwd: root, encoding: 'utf8' }
+).trim();
+const port = Number(process.env.MAP_BENCHMARK_PORT ?? 4185);
+if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('Invalid preview port');
 const inputs = {
-	original: gunzipSync(await readFile(resolve(root, 'data/taiwan_geo.source.json.gz'))),
+	original: execFileSync('git', ['show', `${baselineCommit}:static/taiwan_geo.json`], {
+		cwd: root,
+		maxBuffer: 16 * 1024 * 1024
+	}),
 	optimized: await readFile(resolve(root, 'static/taiwan_geo.json'))
 };
 const weather = JSON.parse(await readFile(resolve(root, 'tests/fixtures/weather.json'), 'utf8'));
@@ -24,7 +38,7 @@ process.env.PUBLIC_API_TOKEN = '';
 process.chdir(root);
 const server = await preview({
 	logLevel: 'error',
-	preview: { host: '127.0.0.1', port: 4175, strictPort: true }
+	preview: { host: '127.0.0.1', port, strictPort: true }
 });
 let browser;
 
@@ -80,8 +94,10 @@ async function measure(name) {
 			};
 			requestAnimationFrame(detectPaint);
 		});
-		await page.goto('http://127.0.0.1:4175/');
-		await page.waitForFunction(() => window.__mapBenchmark.painted !== undefined);
+		await page.goto(`http://127.0.0.1:${port}/`);
+		await page.waitForFunction(() => window.__mapBenchmark.painted !== undefined, undefined, {
+			timeout: 30000
+		});
 		const result = await page.evaluate(() => {
 			const { jsonStarted, jsonReady, painted } = window.__mapBenchmark;
 			return {
@@ -126,6 +142,13 @@ try {
 	console.log(
 		JSON.stringify(
 			{
+				baselineCommit,
+				assetBytes: Object.fromEntries(
+					Object.entries(inputs).map(([name, bytes]) => [
+						name,
+						{ json: bytes.length, gzip: gzipSync(bytes, { level: 9 }).length }
+					])
+				),
 				platform: `${platform()} ${arch()}`,
 				cpu: cpus()[0].model,
 				node: process.version,
