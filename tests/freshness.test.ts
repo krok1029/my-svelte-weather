@@ -27,7 +27,9 @@ test('縣市預報隨時間移除結束時段，摘要標示台灣時間的跨�
 	await expect(page.getByRole('article')).toHaveCount(2);
 	await page.clock.fastForward(18 * 60 * 60_000);
 	await expect(page.getByRole('article')).toHaveCount(0);
-	await expect(page.locator('.weather-summary')).toHaveCount(0);
+	await expect(page.locator('.weather-summary')).toContainText('目前沒有可用的時段預報');
+	await expect(page.locator('.weather-summary')).not.toContainText('°C');
+	await expect(page.locator('.weather-summary')).not.toContainText('%');
 	await expect(page.getByText('暫無 臺北市 的天氣資料。', { exact: true })).toBeVisible();
 });
 
@@ -53,7 +55,9 @@ test('行政區摘要與詳細時段一起前進，所有時段結束後顯示�
 	await expect(page.locator('.weather-summary')).toContainText('80%');
 	await page.clock.fastForward(3 * 60 * 60_000);
 	await expect(page.getByRole('article')).toHaveCount(0);
-	await expect(page.locator('.weather-summary')).toHaveCount(0);
+	await expect(page.locator('.weather-summary')).toContainText('目前沒有可用的時段預報');
+	await expect(page.locator('.weather-summary')).not.toContainText('°C');
+	await expect(page.locator('.weather-summary')).not.toContainText('%');
 	await expect(page.getByText('暫無 內湖區 的未來天氣資料。', { exact: true })).toBeVisible();
 });
 

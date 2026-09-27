@@ -25,6 +25,7 @@ Playwright 自動建置並啟動獨立 preview server；4173 必須空閒。測�
 - `weather-card.test.ts`：時段、溫度、PoP、缺值與空資料。
 - `api.test.ts`：延遲回應、獨立失敗與重試、快取提示、同源請求。
 - `map.test.ts`：地圖失敗與重試、選取狀態同步。
+- `mobile-summary.test.ts`：375px 直向與 667px 橫向的摘要／地圖／詳細預報順序、桌面側欄、鍵盤焦點、深色模式，以及摘要的載入／重試／空資料狀態。
 
 測試以可見狀態與回應條件等待，不使用固定秒數等待、不吞掉斷言錯誤。失敗報告、截圖、影片與 trace 放在 `test-results/` 與 `playwright-report/`；CI 保留七天。
 
