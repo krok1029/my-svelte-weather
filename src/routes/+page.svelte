@@ -2,6 +2,7 @@
 	import WeatherRangeCard from '$lib/components/WeatherRangeCard.svelte';
 	import WeatherMap from '$lib/components/WeatherMap.svelte';
 	import DistrictForecast from '$lib/components/DistrictForecast.svelte';
+	import SavedPlaces from '$lib/components/SavedPlaces.svelte';
 	import { fetchDistrictWeather } from '$lib/api/district-weather';
 	import type { DistrictWeatherPayload } from '$lib/types/district-weather';
 	import type { FeatureCollection } from 'geojson';
@@ -374,6 +375,15 @@
 					>{#if selectedDistrict}<ChevronRight size={13} /><strong>{selectedDistrict}</strong>{/if}
 				</div>
 			{/if}
+			<SavedPlaces
+				{cities}
+				{selectedCity}
+				{selectedDistrict}
+				onselect={(place) => {
+					selectCity(place?.city ?? null);
+					if (place?.district) selectDistrict(place.district);
+				}}
+			/>
 		</section>
 
 		<section class="map-panel" aria-label="互動地圖">
