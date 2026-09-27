@@ -1,6 +1,7 @@
 <script lang="ts">
 	import WeatherRangeCard from '$lib/components/WeatherRangeCard.svelte';
 	import WeatherMap from '$lib/components/WeatherMap.svelte';
+	import LocationSearch from '$lib/components/LocationSearch.svelte';
 	import DistrictForecast from '$lib/components/DistrictForecast.svelte';
 	import SavedPlaces from '$lib/components/SavedPlaces.svelte';
 	import { fetchDistrictWeather } from '$lib/api/district-weather';
@@ -330,6 +331,14 @@
 				<h2>你想看哪裡的天氣？</h2>
 				<MapPin size={17} />
 			</div>
+			<LocationSearch
+				{cities}
+				loading={citiesLoading}
+				onselect={({ city, district }) => {
+					selectCity(city);
+					if (district) selectDistrict(district);
+				}}
+			/>
 			<div class="location-selects">
 				<label
 					>縣市<select
