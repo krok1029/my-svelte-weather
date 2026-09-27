@@ -258,9 +258,13 @@ a:focus-visible {
 .map-panel {
 	grid-column: 2;
 	grid-row: 1 / 4;
+	align-self: start;
+	height: min(790px, calc(100dvh - 270px));
+	position: sticky;
+	top: 16px;
 	display: flex;
 	flex-direction: column;
-	min-height: 0;
+	min-height: 740px;
 	border-radius: 22px;
 	overflow: hidden;
 	box-shadow: 0 8px 24px #193b3310;
@@ -765,6 +769,9 @@ a:focus-visible {
 		margin-bottom: 15px;
 	}
 	.map-panel {
+		position: static;
+		align-self: stretch;
+		min-height: 0;
 		height: 420px;
 		flex: none;
 		border-radius: 18px;

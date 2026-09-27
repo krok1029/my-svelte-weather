@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, test, districtWeatherEnvelope } from './fixtures';
 
 for (const viewport of [
 	{ width: 375, height: 667 },
@@ -75,6 +75,9 @@ test('桌面展開常用地點後仍維持左側摘要與預報、右側地圖�
 	await page.goto('/');
 	await page.getByRole('combobox', { name: '選擇縣市', exact: true }).selectOption('臺北市');
 	await expect(page.locator('.weather-summary')).toContainText('25–30°C');
+	await expect
+		.poll(async () => Number(await page.locator('.map').getAttribute('data-zoom')))
+		.toBeGreaterThanOrEqual(10);
 	await page.locator('.saved-places summary').click();
 	await expect(page.getByRole('list', { name: '常用地點', exact: true })).toBeVisible();
 	const summary = (await page.locator('.summary-panel').boundingBox())!;
@@ -135,4 +138,31 @@ test('手機缺值與空預報不顯示誤導性的溫度或降雨', async ({ pa
 	await expect(page.locator('.weather-summary')).toHaveCount(0);
 	await expect(summary).not.toBeVisible();
 	await expect(page.getByRole('heading', { name: '從一個地方開始。' })).toBeVisible();
+});
+
+test('有效行政區預報只有溫度缺值時仍保留其他預報且說明溫度缺值', async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 667 });
+	const payload = districtWeatherEnvelope();
+	const data = {
+		...payload,
+		data: {
+			...payload.data,
+			locations: payload.data.locations.map((location) => ({
+				...location,
+				periods: location.periods.map((period) => ({
+					...period,
+					temperature: null,
+					rainProbability: 50
+				}))
+			}))
+		}
+	};
+	await page.route('**/api/weather/districts?*', (route) => route.fulfill({ json: data }));
+	await page.goto('/?city=臺北市&district=內湖區');
+	const summary = page.getByRole('region', { name: '天氣摘要', exact: true });
+	await expect(summary).toContainText('溫度暫無資料');
+	await expect(summary).toContainText('50%');
+	await expect(summary).toContainText('31–32°C');
+	await expect(summary).toContainText('09/26 12:00 至 09/26 15:00 預報');
+	await expect(summary).not.toContainText('目前沒有可用的時段預報');
 });

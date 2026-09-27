@@ -430,6 +430,7 @@
 					</p>{/if}
 				{#if selectedCity}
 					<WeatherSummary
+						hasPeriod={Boolean(selectedDistrict ? districtNow : countyNow)}
 						periodLabel={summaryPeriodLabel}
 						weather={summaryWeather}
 						temperature={summaryTemperature}

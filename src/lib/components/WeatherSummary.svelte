@@ -5,6 +5,7 @@
 
 	let {
 		weather,
+		hasPeriod,
 		temperature,
 		rain,
 		comfort,
@@ -14,6 +15,7 @@
 		error = false
 	}: {
 		weather?: string | null;
+		hasPeriod: boolean;
 		temperature?: string | null;
 		rain?: string | number | null;
 		comfort: string;
@@ -35,7 +37,13 @@
 		</div>
 	{:else}
 		<p class="summary-unavailable">
-			{loading ? '正在取得預報…' : error ? '預報暫時無法取得' : '目前沒有可用的時段預報'}
+			{hasPeriod
+				? '溫度暫無資料'
+				: loading
+					? '正在取得預報…'
+					: error
+						? '預報暫時無法取得'
+						: '目前沒有可用的時段預報'}
 		</p>
 	{/if}
 	<div class="summary-metrics">
