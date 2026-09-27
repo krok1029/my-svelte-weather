@@ -8,25 +8,21 @@ import type {
 	WeatherTimeElement
 } from '@/types/weatherType';
 
-export function formatDateTime(datetime: string): string {
-	const date = new Date(datetime);
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const day = String(date.getDate()).padStart(2, '0');
-	const hours = String(date.getHours()).padStart(2, '0');
-	const minutes = String(date.getMinutes()).padStart(2, '0');
-	return `${month}/${day} ${hours}:${minutes}`;
-}
+import { forecastTimestamp, formatForecastTime } from '../weather/freshness';
 
-const factory = (location: WeatherLocation) => {
+export const formatDateTime = formatForecastTime;
+
+const factory = (location: WeatherLocation, now = -Infinity) => {
 	const { locationName, weatherElement } = location;
 
 	const timeElementsMap: { [key: string]: WeatherTimeElement } = {};
 
 	weatherElement.forEach((element) => {
 		element.time.forEach(({ startTime, endTime, parameter }) => {
+			if (forecastTimestamp(endTime) <= now) return;
 			const start = formatDateTime(startTime);
 			const end = formatDateTime(endTime);
-			const key = `${start}-${end}`;
+			const key = `${startTime}-${endTime}`;
 			if (!timeElementsMap[key]) {
 				timeElementsMap[key] = { startTime: start, endTime: end };
 			}

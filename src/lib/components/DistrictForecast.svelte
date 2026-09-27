@@ -2,12 +2,9 @@
 	import type { DistrictForecast } from '$lib/types/district-weather';
 	import WeatherSymbol from './WeatherSymbol.svelte';
 	import Droplets from '@lucide/svelte/icons/droplets';
-	let { location }: { location: DistrictForecast } = $props();
+	let { location, now }: { location: DistrictForecast; now: number } = $props();
 	let expanded = $state(false);
-	const periods = $derived.by(() => {
-		const now = Date.now();
-		return location.periods.filter((period) => Date.parse(period.endTime) > now);
-	});
+	const periods = $derived(location.periods.filter((period) => Date.parse(period.endTime) > now));
 	const visiblePeriods = $derived(expanded ? periods : periods.slice(0, 8));
 	const format = (value: string) =>
 		new Intl.DateTimeFormat('zh-TW', {
