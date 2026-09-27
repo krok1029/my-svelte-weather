@@ -1,19 +1,39 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Feature, FeatureCollection } from 'geojson';
 import type { GeoJSONOptions, Layer, PathOptions } from 'leaflet';
-import { createWeatherMap, type WeatherMapState } from './index';
+import { createWeatherMap, overviewBounds, type WeatherMapState } from './index';
 
 const mocks = vi.hoisted(() => {
 	const map = {
+		createPane: vi.fn(() => ({ style: {} })),
 		setView: vi.fn().mockReturnThis(),
 		invalidateSize: vi.fn(),
+		fitBounds: vi.fn(),
+		flyToBounds: vi.fn(),
+		stop: vi.fn(),
+		on: vi.fn(),
+		off: vi.fn(),
+		getCenter: vi.fn(() => ({ lat: 25, lng: 121 })),
+		getZoom: vi.fn(() => 8),
+		getBounds: vi.fn(() => ({
+			getWest: () => 120,
+			getEast: () => 122,
+			getSouth: () => 24,
+			getNorth: () => 26
+		})),
 		remove: vi.fn()
 	};
 	return { map, geoJSON: vi.fn(), tileLayer: vi.fn(() => ({ addTo: vi.fn() })) };
 });
 
 vi.mock('leaflet', () => ({
-	default: { map: vi.fn(() => mocks.map), tileLayer: mocks.tileLayer, geoJSON: mocks.geoJSON }
+	default: {
+		map: vi.fn(() => mocks.map),
+		tileLayer: mocks.tileLayer,
+		geoJSON: mocks.geoJSON,
+		svg: vi.fn(),
+		control: { zoom: vi.fn(() => ({ addTo: vi.fn() })), scale: vi.fn(() => ({ addTo: vi.fn() })) }
+	}
 }));
 
 const feature = (name: string): Feature => ({
@@ -42,6 +62,7 @@ const createMockPath = (feature: Feature) => {
 		feature,
 		style: {} as PathOptions,
 		bindTooltip: vi.fn(),
+		getBounds: vi.fn(() => feature.geometry),
 		setStyle: vi.fn((style: PathOptions) => {
 			path.style = style;
 		}),
@@ -67,6 +88,8 @@ let mockGeoLayer: {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	vi.stubGlobal('document', { createElement: () => ({ textContent: '' }) });
+	vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) });
 	mockPaths = [];
 	mocks.geoJSON.mockImplementation((data: FeatureCollection, options: GeoJSONOptions) => {
 		mockPaths = data.features.map((entry) => {
@@ -95,9 +118,34 @@ const state = (selectedCity: string | null = null): WeatherMapState => ({
 	selectedCity,
 	onselect: vi.fn()
 });
-const container = {} as HTMLDivElement;
+const container = { dataset: {} } as HTMLDivElement;
 
 describe('weather map selection', () => {
+	it('should focus a selected city once, preserve manual panning, and reset to Taiwan', () => {
+		// Arrange
+		const initial = state();
+		const target = createWeatherMap(container, initial);
+
+		// Act
+		target.update({ ...initial, selectedCity: '臺北市' });
+		target.update({ ...initial, selectedCity: '臺北市' });
+
+		// Assert
+		expect(mocks.map.flyToBounds).toHaveBeenCalledTimes(1);
+		expect(mocks.map.flyToBounds).toHaveBeenLastCalledWith(
+			[
+				[25, 121],
+				[25.1, 121.1]
+			],
+			expect.objectContaining({ animate: true, duration: 0.7 })
+		);
+		target.update(initial);
+		expect(mocks.map.flyToBounds).toHaveBeenLastCalledWith(
+			overviewBounds,
+			expect.objectContaining({ animate: true })
+		);
+	});
+
 	it('should retain selected highlight after hover exits and clear the previous city on selection', () => {
 		// Arrange
 		const initial = state('臺北市');
@@ -109,8 +157,13 @@ describe('weather map selection', () => {
 		taipei.events.mouseout();
 
 		// Assert
-		expect(taipei.style).toEqual({ fillColor: '#0f00ff', fillOpacity: 0.35, weight: 3 });
-		expect(newTaipei.style.fillColor).toBe('transparent');
+		expect(taipei.style).toEqual({
+			color: '#c45d24',
+			fillColor: '#f39a48',
+			fillOpacity: 0.4,
+			weight: 2.5
+		});
+		expect(newTaipei.style.fillColor).toBe('#e8f2e9');
 
 		// Act
 		target.update({ ...initial, selectedCity: '新北市' });
@@ -118,8 +171,18 @@ describe('weather map selection', () => {
 		taipei.events.mouseout();
 
 		// Assert
-		expect(taipei.style).toEqual({ fillColor: 'transparent', fillOpacity: 0.2, weight: 2 });
-		expect(newTaipei.style).toEqual({ fillColor: '#0f00ff', fillOpacity: 0.35, weight: 3 });
+		expect(taipei.style).toEqual({
+			color: '#647b7f',
+			fillColor: '#e8f2e9',
+			fillOpacity: 0.13,
+			weight: 1.2
+		});
+		expect(newTaipei.style).toEqual({
+			color: '#c45d24',
+			fillColor: '#f39a48',
+			fillOpacity: 0.4,
+			weight: 2.5
+		});
 		expect(mocks.geoJSON).toHaveBeenCalledTimes(1);
 	});
 
@@ -150,8 +213,8 @@ describe('weather map selection', () => {
 
 		// Assert
 		expect(mocks.geoJSON).toHaveBeenCalledTimes(1);
-		expect(mockPaths[0].style.fillColor).toBe('#0f00ff');
-		expect(mockPaths[1].style.fillColor).toBe('transparent');
+		expect(mockPaths[0].style.fillColor).toBe('#f39a48');
+		expect(mockPaths[1].style.fillColor).toBe('#e8f2e9');
 	});
 
 	it('should dispose old event handlers when geography is cleared', () => {
@@ -183,4 +246,21 @@ describe('weather map selection', () => {
 		expect(mocks.map.remove).toHaveBeenCalledTimes(1);
 		expect(mockPaths.map((path) => path.events)).toEqual([{}, {}]);
 	});
+});
+
+it('honors reduced motion while allowing an explicit refocus', () => {
+	vi.stubGlobal('window', { matchMedia: () => ({ matches: true }) });
+	const initial = state('臺北市');
+	const target = createWeatherMap(container, initial);
+	expect(mocks.map.flyToBounds).not.toHaveBeenCalled();
+	expect(mocks.map.fitBounds).toHaveBeenLastCalledWith(
+		[
+			[25, 121],
+			[25.1, 121.1]
+		],
+		expect.objectContaining({ animate: false })
+	);
+	const count = mocks.map.fitBounds.mock.calls.length;
+	target.update({ ...initial, focusRequest: 1 });
+	expect(mocks.map.fitBounds).toHaveBeenCalledTimes(count + 1);
 });

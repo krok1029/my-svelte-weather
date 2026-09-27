@@ -3,7 +3,16 @@
 	import { createWeatherMap, type WeatherMapState } from '$lib/map';
 	import 'leaflet/dist/leaflet.css';
 
-	let { geo, selectedCity, onselect }: WeatherMapState = $props();
+	let {
+		geo,
+		selectedCity,
+		onselect,
+		districts,
+		selectedDistrict,
+		onselectdistrict,
+		districtGeo,
+		focusRequest
+	}: WeatherMapState = $props();
 
 	const mapAction: Action<HTMLDivElement, WeatherMapState> = (node, state) => {
 		const map = createWeatherMap(node, state);
@@ -21,10 +30,21 @@
 </script>
 
 <div
-	class="map h-full w-full"
+	class="map isolate h-full w-full"
 	role="region"
-	aria-label="臺灣縣市天氣地圖，可使用縣市按鈕選取"
+	aria-label="臺灣縣市天氣地圖，可使用地區選單選取"
 	data-selected-city={selectedCity ?? ''}
+	data-selected-district={selectedDistrict ?? ''}
+	data-boundaries-ready={districtGeo ? 'true' : 'false'}
 	data-ready={geo !== null ? 'true' : 'false'}
-	use:mapAction={{ geo, selectedCity, onselect }}
+	use:mapAction={{
+		geo,
+		selectedCity,
+		onselect,
+		districts,
+		selectedDistrict,
+		onselectdistrict,
+		districtGeo,
+		focusRequest
+	}}
 ></div>

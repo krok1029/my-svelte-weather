@@ -13,7 +13,7 @@ test('天氣載入期間可先選縣市並在回應後自動顯示預報', async
 	await page.goto('/');
 	await expect(page.getByText('天氣資料載入中…', { exact: true })).toBeVisible();
 	await expect(page.locator('.leaflet-overlay-pane canvas')).toBeVisible();
-	await page.getByRole('button', { name: '查看 臺北市 的天氣', exact: true }).click();
+	await page.getByRole('combobox', { name: '選擇縣市', exact: true }).selectOption('臺北市');
 	await expect(page.getByRole('article')).toHaveCount(0);
 
 	// WHEN: The delayed weather response arrives.
@@ -35,7 +35,7 @@ test('天氣失敗不阻擋地圖與縣市並可單獨重試', async ({ page }) 
 	await page.goto('/');
 	await expect(page.getByText('天氣資料載入失敗，請稍後重試。', { exact: true })).toBeVisible();
 	await expect(page.locator('.leaflet-overlay-pane canvas')).toBeVisible();
-	await page.getByRole('button', { name: '查看 臺北市 的天氣', exact: true }).click();
+	await page.getByRole('combobox', { name: '選擇縣市', exact: true }).selectOption('臺北市');
 
 	// WHEN: Retrying only weather.
 	await page.getByRole('button', { name: '重新載入天氣', exact: true }).click();
@@ -43,9 +43,7 @@ test('天氣失敗不阻擋地圖與縣市並可單獨重試', async ({ page }) 
 	// THEN: Forecast appears for the retained selection and the error clears.
 	await expect(page.getByRole('article')).toHaveCount(3);
 	await expect(page.getByText('天氣資料載入失敗，請稍後重試。', { exact: true })).toHaveCount(0);
-	await expect(
-		page.getByRole('button', { name: '查看 臺北市 的天氣', exact: true })
-	).toHaveAttribute('aria-pressed', 'true');
+	await expect(page.getByRole('combobox', { name: '選擇縣市', exact: true })).toHaveValue('臺北市');
 });
 
 test('縣市清單 HTTP 錯誤可重試且不阻擋天氣與地圖', async ({ page }) => {
@@ -57,7 +55,7 @@ test('縣市清單 HTTP 錯誤可重試且不阻擋天氣與地圖', async ({ pa
 	);
 	await page.goto('/');
 	await expect(page.getByText('縣市清單載入失敗，請稍後重試。', { exact: true })).toBeVisible();
-	await expect(page.getByText('三十六小時天氣預報', { exact: true })).toBeVisible();
+	await expect(page.getByRole('heading', { name: '每一地，都有自己的天氣。' })).toBeVisible();
 	await expect(page.locator('.leaflet-overlay-pane canvas')).toBeVisible();
 
 	// WHEN: Retrying the city list.
@@ -76,7 +74,7 @@ test('快取資料標示來源並可更新為最新資料', async ({ page }) => 
 		{ times: 1 }
 	);
 	await page.goto('/');
-	await page.getByRole('button', { name: '查看 臺北市 的天氣', exact: true }).click();
+	await page.getByRole('combobox', { name: '選擇縣市', exact: true }).selectOption('臺北市');
 	await expect(page.getByRole('article')).toHaveCount(3);
 	await expect(
 		page.getByText('目前顯示快取資料，氣象服務暫時無法更新。', { exact: true })
@@ -91,9 +89,7 @@ test('快取資料標示來源並可更新為最新資料', async ({ page }) => 
 		page.getByText('目前顯示快取資料，氣象服務暫時無法更新。', { exact: true })
 	).toHaveCount(0);
 	await expect(page.getByRole('article')).toHaveCount(3);
-	await expect(
-		page.getByRole('button', { name: '查看 臺北市 的天氣', exact: true })
-	).toHaveAttribute('aria-pressed', 'true');
+	await expect(page.getByRole('combobox', { name: '選擇縣市', exact: true })).toHaveValue('臺北市');
 });
 
 test('瀏覽器只向同源端點要求天氣且不傳送 Authorization', async ({ page }) => {
@@ -107,7 +103,7 @@ test('瀏覽器只向同源端點要求天氣且不傳送 Authorization', async 
 	// WHEN: The homepage loads its weather data.
 	await page.goto('/');
 	const request = await weatherRequest;
-	await expect(page.getByText('三十六小時天氣預報', { exact: true })).toBeVisible();
+	await expect(page.getByRole('heading', { name: '每一地，都有自己的天氣。' })).toBeVisible();
 
 	// THEN: No API token or direct upstream request is made by the browser.
 	expect(new URL(request.url()).pathname).toBe('/api/weather');

@@ -3,91 +3,35 @@
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import CloudSun from '@lucide/svelte/icons/cloud-sun';
-	import Menu from '@lucide/svelte/icons/menu';
-	import CircleUser from '@lucide/svelte/icons/circle-user';
-
 	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 </script>
 
-<header class="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-	<nav
-		class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6"
-	>
-		<a href="##" class="flex items-center gap-2 text-lg font-semibold md:text-base">
-			<CloudSun class="h-6 w-6" />
-			<span class="sr-only">Svelte Weather App</span>
-		</a>
-		<a href="##" class="text-foreground transition-colors hover:text-foreground"> Weather </a>
-	</nav>
-	<Sheet.Root>
-		<Sheet.Trigger>
-			{#snippet child({ props })}
-				<Button variant="outline" size="icon" class="shrink-0 md:hidden" {...props}>
-					<Menu class="h-5 w-5" />
-					<span class="sr-only">Toggle navigation menu</span>
-				</Button>
-			{/snippet}
-		</Sheet.Trigger>
-		<Sheet.Content side="left">
-			<nav class="grid gap-6 text-lg font-medium">
-				<a href="##" class="flex items-center gap-2 text-lg font-semibold">
-					<CloudSun class="h-6 w-6" />
-					<span class="sr-only">Svelte Weather App</span>
-				</a>
-				<a href="##" class="hover:text-foreground"> Weather </a>
-			</nav>
-		</Sheet.Content>
-	</Sheet.Root>
-	<div class="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-		<div class="ml-auto flex-1 sm:flex-initial"></div>
-		<!-- <form class="ml-auto flex-1 sm:flex-initial">
-				<div class="relative">
-					<Search class="text-muted-foreground absolute left-2.5 top-2.5 h-4 w-4" />
-					<Input
-						type="search"
-						placeholder="Search products..."
-						class="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-					/>
-				</div>
-			</form> -->
+<header class="site-header">
+	<a href="/" class="weather-brand" aria-label="島嶼天氣首頁">
+		<span class="brand-icon"><CloudSun size={25} strokeWidth={1.7} /></span>
+		<span><strong>島嶼天氣</strong><small>TAIWAN WEATHER</small></span>
+	</a>
+	<div class="header-actions">
+		<span class="source-label"><span></span>中央氣象署預報</span>
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
 				{#snippet child({ props })}
-					<Button {...props} variant="outline" size="icon">
-						<Sun
-							class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
-						/>
-						<Moon
-							class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
-						/>
-						<span class="sr-only">Toggle theme</span>
+					<Button
+						{...props}
+						variant="ghost"
+						size="icon"
+						class="size-11 rounded-full"
+						aria-label="切換顯示主題"
+					>
+						<Sun class="size-5 dark:hidden" /><Moon class="hidden size-5 dark:block" />
 					</Button>
 				{/snippet}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
-				<DropdownMenu.Item onclick={() => setMode('light')}>Light</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => setMode('dark')}>Dark</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => resetMode()}>System</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger>
-				{#snippet child({ props })}
-					<Button {...props} variant="secondary" size="icon" class="rounded-full">
-						<CircleUser class="h-5 w-5" />
-						<span class="sr-only">Toggle user menu</span>
-					</Button>
-				{/snippet}
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end">
-				<DropdownMenu.Label>My Account</DropdownMenu.Label>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Item>Settings</DropdownMenu.Item>
-				<DropdownMenu.Item>Support</DropdownMenu.Item>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Item>Logout</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => setMode('light')}>淺色模式</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => setMode('dark')}>深色模式</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => resetMode()}>跟隨系統</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	</div>

@@ -1,26 +1,26 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card';
 	import type { WeatherTimeElement } from '@/types/weatherType';
-	export let range: WeatherTimeElement;
+	import WeatherSymbol from './WeatherSymbol.svelte';
+	import Droplets from '@lucide/svelte/icons/droplets';
+	let { range }: { range: WeatherTimeElement } = $props();
 </script>
 
-<article aria-label={`${range.startTime} 至 ${range.endTime} 的天氣預報`}>
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>{`${range.startTime}~${range.endTime}`}</Card.Title>
-		</Card.Header>
-		<Card.Content>
-			<ul>
-				<li>天氣現象：{range.Wx?.parameterName}</li>
-				<li>
-					降雨機率：{range.PoP
-						? `${range.PoP.parameterName}${range.PoP.parameterUnit}`
-						: '暫無資料'}
-				</li>
-				<li>最高溫：{range.MaxT ? `${range.MaxT.parameterName}°C` : ''}</li>
-				<li>低溫：{range.MinT ? `${range.MinT.parameterName}°C` : ''}</li>
-				<li>舒適度：{range.CI?.parameterName}</li>
-			</ul>
-		</Card.Content>
-	</Card.Root>
+<article class="forecast-row" aria-label={`${range.startTime} 至 ${range.endTime} 的天氣預報`}>
+	<div class="forecast-time"><strong>{range.startTime}</strong><span>至 {range.endTime}</span></div>
+	<div class="forecast-condition">
+		<span class="weather-symbol"><WeatherSymbol weather={range.Wx?.parameterName} /></span><span
+			>{range.Wx?.parameterName ?? '暫無資料'}</span
+		>
+	</div>
+	<div class="forecast-values">
+		<strong
+			>{range.MinT?.parameterName ?? '—'}–{range.MaxT?.parameterName ?? '—'}<small>°C</small
+			></strong
+		><span><Droplets size={13} />{range.PoP ? `${range.PoP.parameterName}%` : '暫無資料'}</span>
+	</div>
+	<div class="sr-only">
+		最高溫：{range.MaxT?.parameterName}°C 低溫：{range.MinT?.parameterName}°C 降雨機率：{range.PoP
+			? `${range.PoP.parameterName}${range.PoP.parameterUnit}`
+			: '暫無資料'} 舒適度：{range.CI?.parameterName}
+	</div>
 </article>
