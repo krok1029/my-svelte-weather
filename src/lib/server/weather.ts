@@ -1,10 +1,10 @@
 import type { WeatherResponse } from '../types/weatherType';
-import { isWeatherResponse, type WeatherPayload } from '../api';
+import { isWeatherResponse } from '../api';
 
-const API_URL = 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001';
+const API_URL = 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/';
 export const WEATHER_UNAVAILABLE = '天氣資料暫時無法取得，請稍後重試。';
 
-type WeatherServiceOptions = {
+export type WeatherServiceOptions = {
 	getToken: () => string | undefined;
 	fetch?: typeof globalThis.fetch;
 	now?: () => number;
@@ -13,15 +13,20 @@ type WeatherServiceOptions = {
 	maxAgeMs?: number;
 };
 
-export function createWeatherService({
-	getToken,
-	fetch: fetchUpstream = globalThis.fetch,
-	now = Date.now,
-	timeoutMs = 8_000,
-	freshMs = 5 * 60_000,
-	maxAgeMs = 30 * 60_000
-}: WeatherServiceOptions) {
-	let cache: { data: WeatherResponse; fetchedAt: number } | undefined;
+export function createCachedWeatherService<T>(
+	{
+		getToken,
+		fetch: fetchUpstream = globalThis.fetch,
+		now = Date.now,
+		timeoutMs = 8_000,
+		freshMs = 5 * 60_000,
+		maxAgeMs = 30 * 60_000
+	}: WeatherServiceOptions,
+	dataset: string,
+	parse: (value: unknown) => T
+) {
+	type WeatherPayload = { data: T; updatedAt: string; stale: boolean };
+	let cache: { data: T; fetchedAt: number } | undefined;
 	let pending: Promise<WeatherPayload> | undefined;
 
 	const payload = (entry: NonNullable<typeof cache>, stale: boolean): WeatherPayload => ({
@@ -34,7 +39,7 @@ export function createWeatherService({
 		const controller = new AbortController();
 		let timer: ReturnType<typeof setTimeout> | undefined;
 		try {
-			const url = new URL(API_URL);
+			const url = new URL(dataset, API_URL);
 			url.searchParams.set('Authorization', token);
 			const request = (async () => {
 				const response = await fetchUpstream(url, {
@@ -44,8 +49,7 @@ export function createWeatherService({
 				});
 				if (!response.ok) throw new Error(WEATHER_UNAVAILABLE);
 				const data: unknown = await response.json();
-				if (!isWeatherResponse(data)) throw new Error(WEATHER_UNAVAILABLE);
-				return data;
+				return parse(data);
 			})();
 			const timeout = new Promise<never>((_, reject) => {
 				timer = setTimeout(() => {
@@ -75,4 +79,11 @@ export function createWeatherService({
 		}
 		return pending;
 	};
+}
+
+export function createWeatherService(options: WeatherServiceOptions) {
+	return createCachedWeatherService<WeatherResponse>(options, 'F-C0032-001', (value) => {
+		if (!isWeatherResponse(value)) throw new Error(WEATHER_UNAVAILABLE);
+		return value;
+	});
 }

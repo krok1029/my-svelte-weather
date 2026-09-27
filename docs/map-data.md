@@ -111,3 +111,40 @@ JSON 解析、頁面初始化與繪製觀測的開銷；觀測以動畫影格為
 JSON 就緒到繪製包含 Svelte 更新、Leaflet 圖層建立和動畫影格等待，不能視為純 GPU 繪製時間。
 兩組跑相同的新程式碼，因此只比較資料最佳化的影響，沒有量測其他頁面修正的效益。
 沒有量到實際氣象署／底圖延遲、CDN 快取或 gzip 傳輸收益，也不是 LCP、行動裝置或正式環境保證。
+
+## 鄉鎮市區框線
+
+來源：[國土測繪中心鄉鎮市區界線](https://data.gov.tw/dataset/7441)，
+[官方下載頁](https://maps.nlsc.gov.tw/pro/download.jsp)的「鄉鎮市區界線（TWD97 經緯度）」ZIP。
+下載日期 2026-09-27；資料入口 metadata 更新日期為 2025-12-24，並不代表每條界線的測繪日期。
+採用[政府資料開放授權條款第 1 版](https://data.gov.tw/license)。地圖與頁尾均標示來源。
+
+`data/townships.source.zip` 原封保留下載檔，SHA-256：
+
+```text
+e028e5a750eee48cf7913330655e5e5c5bb1f176868fbd0afdfc661fca60557c
+```
+
+腳本讀取主圖層 `TOWN_MOI_1120317` 的 368 筆行政區，保留 22 縣市；不合併附件
+`Town_Majia_Sanhe`，避免重複主圖層行政區。來源為 TWD97 經緯度（GRS80），在天氣地圖以經緯度呈現。
+
+```bash
+/tmp/weather-map-tools/bin/pip install -r scripts/requirements-map.txt
+/tmp/weather-map-tools/bin/python scripts/build-townships.py
+/tmp/weather-map-tools/bin/python scripts/build-townships.py --check
+```
+
+以 Shapely `simplify(0.00002, preserve_topology=True)` 逐行政區簡化，檢查幾何有效性、類型、
+島嶼數量與 Hausdorff 距離；距離超過 0.000021 度時保留原始幾何。與縣市圖層的 coverage 簡化不同，
+這份來源本身未通過 coverage 檢查，不能宣稱相鄰行政區完全沒有重疊或縫隙。
+適合天氣探索，不作為法律界址、地籍或測量依據。
+
+輸出 `static/boundaries/{COUNTYCODE}.json`，索引為 `static/boundaries/index.json`。
+共 16,945,444 bytes，只有選中的縣市會載入（臺北市約 180 KB），並在頁面生命週期內快取。
+切換縣市會取消舊請求，框線錯誤可獨立重試，不阻擋天氣與選單。
+
+縣市採 Canvas、行政區採較上層 SVG，框線與面積皆可點擊，避免底層縣市攔截事件。
+聚焦使用最大連續陸塊，避免同縣市遠端附屬島嶼讓視角拉得過遠；所有圖形仍保留在資料中。
+導航矩形涵蓋臺灣本島與金門、馬祖、澎湖等周邊離島（20.4–26.7°N、116.4–124.8°E），
+這是瀏覽範圍而非法定領土界線；不涵蓋南海遠端島礁。
+此外以既有縣市陸地幾何檢查視窗交集，完全移出陸地時回復上個安全中心與縮放。
