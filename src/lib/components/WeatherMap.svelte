@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Action } from 'svelte/action';
-	import { createWeatherMap, type WeatherMapState } from '$lib/map';
+	import { createWeatherMap, type WeatherMapState } from '#lib/map/index.js';
 	import 'leaflet/dist/leaflet.css';
 
 	let {

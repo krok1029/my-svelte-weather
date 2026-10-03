@@ -30,8 +30,8 @@
 		"@internationalized/date": "^3.12.4",
 		"@lucide/svelte": "^1.48.0",
 		"@playwright/test": "^1.63.0",
-		"@sveltejs/adapter-auto": "^7.0.1",
-		"@sveltejs/kit": "^2.70.3",
+		"@sveltejs/adapter-auto": "^8.0.0",
+		"@sveltejs/kit": "^3.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/typography": "^0.5.20",
@@ -72,5 +72,9 @@
 	},
 	"engines": {
 		"node": "24.x"
+	},
+	"imports": {
+		"#lib": "./src/lib/index.js",
+		"#lib/*": "./src/lib/*"
 	}
 }

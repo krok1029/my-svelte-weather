@@ -1,4 +1,4 @@
-import type { WeatherResponse } from '@/types/weatherType';
+import type { WeatherResponse } from '#lib/types/weatherType.js';
 
 export type WeatherPayload = {
 	data: WeatherResponse;

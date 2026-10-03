@@ -2,7 +2,7 @@ import type {
 	DistrictForecast,
 	DistrictPeriod,
 	DistrictWeather
-} from '$lib/types/district-weather';
+} from '#lib/types/district-weather.js';
 import { createCachedWeatherService, type WeatherServiceOptions } from './weather';
 
 const datasetCities = [

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
-	import { pushState, replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import Star from '@lucide/svelte/icons/star';
 	import Link from '@lucide/svelte/icons/link';
 	import X from '@lucide/svelte/icons/x';
@@ -15,7 +15,7 @@
 		writePreferences,
 		type CityOption,
 		type Place
-	} from '$lib/places/preferences';
+	} from '#lib/places/preferences.js';
 
 	let {
 		cities,
@@ -49,7 +49,7 @@
 
 	$effect(() => {
 		const navigationState = page.state;
-		const url = new URL(window.location.href, page.url);
+		const url = new URL(window.location.href, page.url.href);
 		const options = cities;
 		const current = selected;
 		untrack(() => {
@@ -71,7 +71,8 @@
 				handledSearch = canonical.search;
 				handledPlace = placeKey(next);
 				if (placeKey(next) !== placeKey(current)) onselect(next);
-				if (canonical.href !== url.href) replaceState(canonical, { ...navigationState });
+				if (canonical.href !== url.href)
+					goto(canonical, { shallow: true, replace: true, state: { ...navigationState } });
 				persist(next);
 				return;
 			}
@@ -79,7 +80,7 @@
 				const next = urlForPlace(url, current);
 				handledSearch = next.search;
 				handledPlace = placeKey(current);
-				pushState(next, { ...navigationState });
+				goto(next, { shallow: true, state: { ...navigationState } });
 				persist(current);
 				message = '';
 				manualShare = false;

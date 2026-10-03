@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DistrictForecast } from '$lib/types/district-weather';
+	import type { DistrictForecast } from '#lib/types/district-weather.js';
 	import WeatherSymbol from './WeatherSymbol.svelte';
 	import Droplets from '@lucide/svelte/icons/droplets';
 	let { location, now }: { location: DistrictForecast; now: number } = $props();

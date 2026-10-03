@@ -66,8 +66,8 @@ export function placeFromUrl(url: URL, cities: CityOption[]) {
 	};
 }
 
-export function urlForPlace(url: URL, place: Place | null): URL {
-	const next = new URL(url);
+export function urlForPlace(url: Pick<URL, 'href'>, place: Place | null): URL {
+	const next = new URL(url.href);
 	next.searchParams.delete('city');
 	next.searchParams.delete('district');
 	if (place) {

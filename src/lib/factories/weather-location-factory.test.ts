@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import factory, { formatDateTime } from './weather-location-factory';
-import type { WeatherLocation } from '@/types/weatherType';
+import type { WeatherLocation } from '#lib/types/weatherType.js';
 import weatherJson from '../../../tests/fixtures/weather.json';
 
 const target = factory;

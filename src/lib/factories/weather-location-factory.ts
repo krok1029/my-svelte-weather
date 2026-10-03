@@ -6,7 +6,7 @@ import type {
 	ParameterWx,
 	WeatherLocation,
 	WeatherTimeElement
-} from '@/types/weatherType';
+} from '#lib/types/weatherType.js';
 
 import { forecastTimestamp, formatForecastTime } from '../weather/freshness';
 

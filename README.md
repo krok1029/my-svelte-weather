@@ -14,7 +14,7 @@ My Svelte Weather 是一個使用 SvelteKit 建置的互動式天氣預報網站
 
 ### 前端技術棧
 
-- SvelteKit
+- SvelteKit 3 與 Svelte 5
 - TypeScript
 - Tailwind CSS
 - Leaflet
@@ -27,6 +27,10 @@ My Svelte Weather 是一個使用 SvelteKit 建置的互動式天氣預報網站
 ### 架構設計
 
 瀏覽器只呼叫本站的 `GET /api/weather`，由 SvelteKit 伺服器使用私有環境變數 `CWA_API_TOKEN` 向 CWA 取得資料。Token 不會注入頁面或傳送給瀏覽器。
+
+SvelteKit 設定集中在 `vite.config.ts`；共用程式使用 `package.json` 的 `#lib` subpath imports。
+私有環境變數在 `src/env.ts` 宣告，伺服器透過 `$app/env/private` 取得。升級紀錄見
+[SvelteKit 3 升級說明](docs/sveltekit-3-upgrade-research.md)。
 
 API 回傳 `{ data, updatedAt, stale }`。每個伺服器實例各自保留 5 分鐘記憶體快取，同時到達的更新請求共用一次上游呼叫。上游超時或失敗時，最多回傳取得後 30 分鐘內的快取並標示 `stale: true`；超過期限或沒有可用資料時回傳不含上游細節的 503。`updatedAt` 是本站成功取得資料的時間，不是氣象署預報發布時間。
 

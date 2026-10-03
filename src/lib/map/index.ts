@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import type { Feature, FeatureCollection, GeoJsonObject, MultiPolygon, Polygon } from 'geojson';
-import type { DistrictForecast } from '$lib/types/district-weather';
+import type { DistrictForecast } from '#lib/types/district-weather.js';
 import { createLandConstraint, focusBounds } from './geometry';
 
 export const initialView = { lat: 23.5283, lng: 120.9795 };

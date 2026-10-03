@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { WeatherTimeElement } from '@/types/weatherType';
+	import type { WeatherTimeElement } from '#lib/types/weatherType.js';
 	import WeatherSymbol from './WeatherSymbol.svelte';
 	import Droplets from '@lucide/svelte/icons/droplets';
 	let { range }: { range: WeatherTimeElement } = $props();

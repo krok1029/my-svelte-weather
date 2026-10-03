@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { ModeWatcher } from 'mode-watcher';
-	import Navbar from '@/components/common/Navbar.svelte';
+	import Navbar from '#lib/components/common/Navbar.svelte';
 
 	interface Props {
 		children?: import('svelte').Snippet;

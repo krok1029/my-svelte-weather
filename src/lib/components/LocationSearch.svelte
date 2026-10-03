@@ -5,7 +5,7 @@
 		searchLocations,
 		type LocationOption,
 		type SearchCity
-	} from '$lib/locations/search';
+	} from '#lib/locations/search.js';
 
 	let {
 		cities,

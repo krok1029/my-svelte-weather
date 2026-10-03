@@ -1,4 +1,4 @@
-import type { DistrictWeatherPayload } from '$lib/types/district-weather';
+import type { DistrictWeatherPayload } from '#lib/types/district-weather.js';
 
 const record = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);

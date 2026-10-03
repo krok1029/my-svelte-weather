@@ -1,14 +1,13 @@
-import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
-import { createWeatherService, WEATHER_UNAVAILABLE } from '$lib/server/weather';
+import { CWA_API_TOKEN } from '$app/env/private';
+import { createWeatherService, WEATHER_UNAVAILABLE } from '#lib/server/weather.js';
 
-const getWeather = createWeatherService({ getToken: () => env.CWA_API_TOKEN });
+const getWeather = createWeatherService({ getToken: () => CWA_API_TOKEN });
 
 export async function GET() {
 	try {
-		return json(await getWeather(), { headers: { 'Cache-Control': 'no-store' } });
+		return Response.json(await getWeather(), { headers: { 'Cache-Control': 'no-store' } });
 	} catch {
-		return json(
+		return Response.json(
 			{ message: WEATHER_UNAVAILABLE },
 			{ status: 503, headers: { 'Cache-Control': 'no-store' } }
 		);
